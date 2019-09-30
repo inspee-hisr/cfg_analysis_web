@@ -109,20 +109,20 @@ favicons: # Favicons are also used in the manifest file. Syntax is 'size: path'
 # 9. Site navigation
 navigation_header:
 - title: Home
-  url: CFG_statistics/
+  url: /CFG_statistics/
 - title: Elements
-  url: CFG_statistics/elements/
+  url: /CFG_statistics/elements/
 - title: Blog
   url: /blog/
 - title: Categories
-  url: CFG_statistics/categories/
+  url: /CFG_statistics/categories/
 - title: Search
-  url: CFG_statistics/search/
+  url: /CFG_statistics/search/
 - title: Map
   url: https://savvas-paragkamian.shinyapps.io/Spatial_caves_CFG/
 
 navigation_footer:
-- title: Created by David Darnes
+- title: Created by INSPEE
   url: https://darn.es
 
 social_links: # Appears in sidebar. Set the urls then uncomment and comment out as desired
