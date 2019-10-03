@@ -623,6 +623,23 @@ kable(caves_in_areas,caption=caves_in_areas_caption, align = 'l')
 
 ```
 
+```{r}
+
+caves_protection_data %>% group_by(Protection_Type) %>% summarise(number_of_caves=n()) %>%
+ggplot(.)+
+  geom_col(aes(x=Protection_Type, y= number_of_caves, fill=Protection_Type),show.legend = F)+
+  geom_text(aes(x =Protection_Type,y= number_of_caves, label=number_of_caves), position=position_dodge(width=0.7), vjust=-0.25,size=2.8)+
+  scale_y_continuous(breaks = seq(0,250,25),limits = c(0,250))+
+  ggtitle("Caves in Greece that are protected")+
+  labs(x="Protection", y= "Number of caves")+
+  theme_bw()+
+  theme(panel.grid.minor = element_blank(), panel.grid.major = element_blank(),axis.text.x = element_text(angle = 45, hjust = 1))
+
+ggsave("caves_protection_data_greece.jpeg", plot = last_plot(), device = "jpeg", dpi = 300,path = "Plots/")
+
+```
+
+
 With google earth background.
 
 ```{r, warning=FALSE, message=FALSE, echo=FALSE}

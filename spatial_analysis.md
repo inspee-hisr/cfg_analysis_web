@@ -39,6 +39,7 @@ We used these packages for the analysis in R:
 
 ![Summary of cave protections in Greece](/assets/Website_plots/caves_protection_data_type.png)
 
+
 ![Caves and protected areas in Greece (only borders)](/assets/Plots/map_greece_plot_lines.png)
 
 
