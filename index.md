@@ -35,7 +35,7 @@ For each cave, the following information is provided: The Greek name of the cave
 
 ### Interactive Map
 
-For the Interactive we use the [leaflet package](https://rstudio.github.io/leaflet/) which we incorporated in a [Shiny Application](https://www.shinyapps.io).
+For the Interactive Map we use the [leaflet package](https://rstudio.github.io/leaflet/) which we incorporated in a [Shiny Application](https://www.shinyapps.io).
 
 ### Technical specification and database design
 
