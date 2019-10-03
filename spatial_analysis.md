@@ -5,8 +5,11 @@ aside: false
 
 ## Administrative data of Greece
 
-We downloaded the greek municipality boundaries (Kallikratis plan) from [http://geodata.gov.gr/en/dataset/oria-demon-kallikrates](http://geodata.gov.gr) in the epsg 4326 format. In this format the axis order is Latitude followed by Longitude. 
-The Greek names of municipalities were converted using the ISO 843 traslitaration system from this [online portal](http://www.passport.gov.gr/elot-743.html).
+
+
+[sp](https://cran.r-project.org/web/packages/sp/index.html)
+[rgdal](https://www.rdocumentation.org/packages/rgdal/versions/1.4-4)
+[maptools](https://www.rdocumentation.org/packages/maptools/versions/0.9-5)
 
 
 ![Regions with caves coordinates in Greece.](/assets/Plots/caves_in_region_no_text_color.png)

@@ -5,6 +5,8 @@ aside: false
 
 Here we describe the data of the database in terms of taxonomy, regional distribution of species and caves, Red lists status of species as well as historical accumulation of species data and publications.
 
+For descriptive statistics and the respective plots we use [Tidyverse](https://www.tidyverse.org) and for the numerical analysis we use the [vegan package](https://rdrr.io/cran/vegan/man/vegan-package.html).
+
 ![Caves and species abudance in each administravive region of Greece](/assets/Website_plots/caves_species_region.png)
 
 
