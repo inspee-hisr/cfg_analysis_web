@@ -1,0 +1,157 @@
+---
+title: "Cave Fauna of Greece Database Analysis"
+author: "Hellenic Institute of Speleological Research"
+date: '`r Sys.Date()`'
+output:
+  html_document:
+    toc: yes
+    toc_depth: 2
+    toc_float: yes
+  pdf_document:
+    toc: yes
+    toc_depth: '2'
+  word_document:
+    toc: yes
+    toc_depth: '2'
+link-citations: yes
+bibliography: packages_used.bib
+site: bookdown::bookdown_site
+biblio-style: apalike
+---
+
+
+```{r, warning=FALSE, message=FALSE, echo=FALSE}
+### Working Directory
+
+#setwd("C:/Users/inikoloudakis/Dropbox/INSPEE Team Folder/Conservation of the cave fauna of Greece - MAVA/Cave_Fauna_database/Cave_Fauna_Database_Analysis")
+
+# Data manipulation packages
+library(readxl)
+library(readr)
+library(ggplot2)
+library(scales)
+library(gridExtra)
+library(grid)
+library(reshape2)
+library(dplyr)
+library(knitr)
+library(tidyr)
+library(httr)
+library(broom)
+library(stringr)
+
+## Data for species
+
+library(rredlist)
+library(taxize)
+library(rgbif)
+library(ISOcodes)
+library(spocc)
+
+# Spatial analysis packages
+
+# x <- c("spocc","isocodes","rgbif","taxize","rredlist","raster","RColorBrewer","ggmap", "rgdal", "rgeos", "maptools", "tmap","Rcpp","sp")
+# #install.packages(x) # warning: uncommenting this may take a number of minutes
+# lapply(x, library, character.only = TRUE)
+library(RColorBrewer)
+library(ggmap)
+library(rgdal)
+library(geosphere)
+library(GISTools)
+library(leaflet)
+library(rgeos)
+library(maptools)
+library(tmap)
+library(Rcpp)
+library(sp)
+library(raster) ##Load the Raster Library
+
+# Species statistics
+
+library(red)
+library(vegan)
+
+packages <- c("readxl","readr","ggplot2","scales","gridExtra","dplyr", "knitr", "tidyr","RColorBrewer","ggmap","rgdal","rgeos","maptools","tmap","Rcpp","sp","raster","broom","red","vegan")
+
+write_bib(x = packages,file = "packages_used.bib")
+
+```
+
+```{r global_options, include=FALSE,echo=FALSE}
+knitr::opts_chunk$set(fig.pos = 'H')
+```
+
+```{r, warning=FALSE, message=FALSE, echo=FALSE}
+# Store the file names of the Data folder
+ 
+ data_files <- list.files(path = "Data")
+ 
+ # Data import from Database Export, the files are choosen automatically based on their name. The folder Data must contain only the latest data files.
+ Cave_References <- read_delim(file = paste0("Data/",grep("Cave_References",data_files,value = TRUE)),delim = "\t")
+ 
+ caves <- read_delim(file = paste0("Data/",grep("Caves",data_files,value = TRUE)),delim = "\t")
+ 
+ census <- read_delim(file = paste0("Data/",grep("Census_\\d",data_files,value = TRUE)),delim = "\t")
+ 
+ Census_references <- read_delim(file = paste0("Data/",grep("Census_references",data_files,value = TRUE)),delim = "\t")
+ 
+species <- read_delim(file = paste0("Data/",grep("Species_",data_files,value = TRUE)),delim = "\t") %>% mutate(Classification=gsub(pattern="\\?",replacement = "",x = Classification))# Data import from Database Export
+
+```
+
+
+```{r, warning=FALSE, message=FALSE, echo=FALSE}
+census$species_epithet <- as.character(lapply(strsplit(as.character(census$Species), split=" "), "[", n=2))
+
+census_all_species <- census %>% left_join(species,by=c("Species"="Species_Full_Name"))
+
+census_all_species_all_caves <- census_all_species %>% dplyr::select(-Cave_Name) %>% left_join(caves, by=c("Cave_ID"="Cave_ID"))
+
+census_long_str_man <- strsplit(x = census_all_species$Reference_Short,split = "|",fixed=TRUE)
+census_long_str_man_id <- strsplit(x = census_all_species$Reference_ID,split = "|",fixed=TRUE)
+
+census_long_man <- data_frame(ReferenceShort=unlist(census_long_str_man),reference_id=unlist(census_long_str_man_id),CaveName=rep.int(census_all_species$Cave_Name,times = sapply(census_long_str_man,length)),Cave_ID=rep.int(census_all_species$Cave_ID,times = sapply(census_long_str_man,length)),Census_id=rep.int(census_all_species$Census_ID,times = sapply(census_long_str_man,length)),Species=rep.int(census_all_species$Species,times = sapply(census_long_str_man,length))) %>% group_by(ReferenceShort,Cave_ID,CaveName,Species,Census_id) %>% summarise(n=n()) %>% ungroup() %>% mutate(Species=trimws(Species,"r"))
+
+```
+
+```{r, warning=FALSE, message=FALSE, echo=FALSE}
+# run all
+ #source('CFG_Introduction.Rmd')
+
+```
+
+
+
+# Introduction
+
+```{r, child='CFG_Introduction.Rmd'}
+
+```
+
+# Spatial Analysis
+
+```{r, child='CFG_Spatial_Analysis.Rmd'}
+
+```
+
+# IUCN Assessment
+
+```{r, child='CFG_IUCN_Assessment.Rmd'}
+
+```
+
+# Numerical Analysis
+
+```{r, child='CFG_Numerical_Analysis.Rmd'}
+
+```
+
+
+# Crete
+
+```{r, child='CFG_Crete.Rmd'}
+
+```
+
+
+# References

@@ -1,0 +1,327 @@
+Municipaties_latin
+Amyntaio
+Athos
+Aktio - Vonitsa
+Andros
+Argos - Mykines
+Edessa
+Ilida
+Ilio
+Ydra
+Aigina
+Avdira
+Agia Varvara
+Agia Paraskevi
+Agios Vasileios
+Agios Dimitrios
+Agios Efstratios
+Agios Nikolaos
+Agioi Anargyroi - Kamaterou
+Agathonisiou
+Agias
+Agkistriou
+Agrafon
+Agriniou
+Ampelokipon - Menemenis
+Athinaion
+Aigaleo
+Aigialeias
+Alimou
+Alexandreias
+Alexandroupolis
+Amfikleias - Elateias
+Amfipolis
+Amfilochias
+Anafis
+Anatolikis Manis
+Andritsainas - Krestenon
+Andravidas - Kyllinis
+Antiparou
+Aliartou
+Alonnisou
+Almyrou
+Almopias
+Moschatou - Tavrou
+Mouzakiou
+Mykonou
+Mylopotamou
+Mykis
+Molou - Ag. Konstantinou
+Naxou & Mikron Kykladon
+Amariou
+Amarousiou
+Amorgou
+Naousas
+Neas Zichnis
+Anogeion
+Apokoronou
+Argitheas
+Aristoteli
+Arrianon
+Artaion
+Archanon - Asterousion
+Archaias Olympias
+Aspropyrgou
+Astypalaias
+Neas Ionias
+Acharnon
+Varis - Voulas - Vouliagmenis
+Velou - Vochas
+Veroias
+Viannou
+Visaltias
+Voiou
+Vrilission
+Volvis
+Volou
+Voreias Kynourias
+Voreion Tzoumerkon
+Vyronos
+Galatsiou
+Gavdou
+Georgiou Karaiskaki
+Ilioupolis
+Neas Smyrnis
+Nestou
+Glyfadas
+Gortynias
+Grevenon
+Gortynas
+Dafnis - Ymittou
+Delta
+Diou - Olympou
+Dirfyon - Messapion
+Delfon
+Deskatis
+Didymoteichou
+Distomou-Arachovas - Antikyras
+Nikaias - Agiou I. Renti
+Nafpaktias
+Dionysou
+Domokou
+Doxatou
+Dramas
+Dytikis Achaias
+Dytikis Manis
+Dodonis
+Doridos
+Elassonas
+Nafplieon
+Elafonisou
+Elefsinas
+Irakleiou
+Thasou
+Thermis
+Thermou
+Thiras
+Thermaikou
+Ellinikou - Argyroupolis
+Emmanouil Pappa
+Eordaias
+Epidavrou
+Eretrias
+Ermionidas
+Erymanthou
+Evrota
+Zitsas
+Zagoras - Mouresiou
+Zagoriou
+Zakynthou
+Zacharos
+Zirou
+Zografou
+Igoumenitsas
+Irakleiou
+Irakleias
+Thessalonikis
+Thivaion
+Iasmou
+Ierapetras
+Ieras Polis Mesolongiou
+Iiton
+Ithakis
+Ikarias
+Istiaias - Aidipsou
+Ioanniton
+Kasou
+Kato Nevrokopiou
+Keas
+Kerkyras
+Kavalas
+Korydallou
+Kropias
+Kythiron
+Konitsas
+Kythnou
+Kymis - Aliveriou
+Ko
+Lerou
+Lesvou
+Limnou
+Kaisarianis
+Kalavryton
+Kalamatas
+Kalamarias
+Kalampakas
+Kallitheas
+Kalymnion
+Kantanou - Selinou
+Karditsas
+Karpathou
+Karpenisiou
+Karystou
+Kassandras
+Kastorias
+Katerinis
+Kentrikon Tzoumerkon
+Keratsiniou - Drapetsonas
+Kefalonias
+Lykovrysis - Pefkis
+Mandras - Eidyllias
+Milou
+Metamorfoseos
+Metsovou
+Monemvasias
+Kifisias
+Kileler
+Kilkis
+Kissamou
+Kozanis
+Komotinis
+Kordeliou - Efosmou
+Korinthion
+Limnis Plastira
+Lagkada
+Lamieon
+Larisaion
+Lavreotikis
+Levadeon
+Leipson
+Lefkadas
+Lokron
+Loutrakiou - Ag. Theodoron
+Minoa Pediadas
+Makrakomis
+Maleviziou
+Mantoudiou - Limnis - Agias Annas
+Marathonos
+Markopoulou Mesogaias
+Maroneias - Sapon
+Megistis
+Megalopolis
+Meganisiou
+Megareon
+Messinis
+Neapolis - Sykeon
+Neas Propontidas
+Oropediou Lasithiou
+Orchomenou
+Pargas
+Parou
+Patmou
+Pellas
+Pangaiou
+Paianias
+Paionias
+Palaiou Falirou
+Palama
+Nemeas
+Nestoriou
+Nikolaou Skoufa
+Nisyrou
+Notiou Piliou
+Notias Kynourias
+Xanthis
+Xiromerou
+Xylokastrou - Evrostinis
+Oinousson
+Oichalias
+Orestidos
+Orestiadas
+Pallinis
+Paxon
+Peristeriou
+Papagou - Cholargou
+Paranestiou
+Patreon
+Pavlou Mela
+Petroupolis
+Pineiou
+Platania
+Polygyrou
+Prevezas
+Prespon
+Prosotsanis
+Pylaias - Chortiati
+Pogoniou
+Porou
+Pydnas - Kolindrou
+Pylis
+Pylou - Nestoros
+Pyrgou
+Riga Ferraiou
+Peiraios
+Spetson
+Stylidas
+Sfakion
+Symis
+Syrou - Ermoupolis
+Tilou
+Tanagras
+Tempon
+Topeirou
+Tripolis
+Trikkaion
+Trifylias
+Troizinias
+Tyrnavou
+Faistou
+Farkadonas
+Farsalon
+Filadelfeias - Chalkidonos
+Filiaton
+Pentelis
+Peramatos
+Rafinas - Pikermiou
+Rethymnis
+Rodou
+Samou
+Sikinou
+Sifnou
+Salaminas
+Samothrakis
+Saronikou
+Serifou
+Servion - Velventou
+Serron
+Siteias
+Sithonias
+Sikyonion
+Sintikis
+Skiathou
+Skopelou
+Skydras
+Skyrou
+Souliou
+Soufliou
+Sofadon
+Spartis
+Spaton - Artemidos
+Filotheis - Psychikou
+Florinas
+Folegandrou
+Fournon Korseon
+Fylis
+Chalkis
+Chiou
+Chaidariou
+Oropou
+Kimolou
+Tinou
+Chalandriou
+Chalkidonos
+Chalkideon
+Chanion
+Chersonisou
+Psaron
+Oraiokastrou
