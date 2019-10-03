@@ -81,12 +81,12 @@ defaults:
 # 7. Site settings
 encoding: utf-8 # Make sure the encoding is right
 lang: en-GB # Set the site language
-title: "CFG Statistics" # Site name or title, also used in jekyll-seo-tag
+title: "CFG Analysis" # Site name or title, also used in jekyll-seo-tag
 logo: "/assets/logos/logo.svg" # Site logo, also used in jekyll-seo-tag
-description: "CFG Statistics contains descriptive statistics, numerical analysis and spatial analysis for the Cave Fauna of Greece Database."
+description: "CFG Analysis contains descriptive statistics, numerical analysis and spatial analysis for the Cave Fauna of Greece Database."
 url: "https://inspee-hisr.github.io/" # Site url, also used in jekyll-seo-tag
-baseurl: "/CFG_statistics"
-repo: "https://github.com/inspee-hisr/CFG_statistics"
+baseurl: "/CFG_analysis"
+repo: "https://github.com/inspee-hisr/CFG_analysis"
 email: "s.paragamian@gmail.com"
 # disqus: "alembic-1" # Blog post comments, uncomment the option and set the site ID from your Disqus account
 # google_analytics: ''
@@ -96,14 +96,14 @@ email: "s.paragamian@gmail.com"
 
 # 8. Site favicons & manifest icons
 favicons: # Favicons are also used in the manifest file. Syntax is 'size: path'
-  16: '/CFG Statistics/assets/logos/logo@16px.png'
-  32: '/CFG Statistics/assets/logos/logo@32px.png'
-  96: '/CFG Statistics/assets/logos/logo@96px.png'
-  120: '/CFG Statistics/assets/logos/logo@120px.png'
-  144: '/CFG Statistics/assets/logos/logo@144px.png'
-  180: '/CFG Statistics/assets/logos/logo@180px.png'
-  512: '/CFG Statistics/assets/logos/logo@512px.png'
-  1024: '/CFG Statistics/assets/logos/logo@1024px.png'
+  16: '/assets/logos/logo@16px.png'
+  32: '/assets/logos/logo@32px.png'
+  96: '/assets/logos/logo@96px.png'
+  120: '/assets/logos/logo@120px.png'
+  144: '/assets/logos/logo@144px.png'
+  180: '/assets/logos/logo@180px.png'
+  512: '/assets/logos/logo@512px.png'
+  1024: '/assets/logos/logo@1024px.png'
 
 # 9. Site navigation
 navigation_header:
