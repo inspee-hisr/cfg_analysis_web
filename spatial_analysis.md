@@ -11,9 +11,9 @@ In this analysis we used spatial data (e.g shapefiles) to enrich the cave fauna 
 
 We used these packages for the analysis in R:
 
-[sp](https://cran.r-project.org/web/packages/sp/index.html)
-[rgdal](https://www.rdocumentation.org/packages/rgdal/versions/1.4-4)
-[maptools](https://www.rdocumentation.org/packages/maptools/versions/0.9-5)
+* [sp](https://cran.r-project.org/web/packages/sp/index.html)
+* [rgdal](https://www.rdocumentation.org/packages/rgdal/versions/1.4-4)
+* [maptools](https://www.rdocumentation.org/packages/maptools/versions/0.9-5)
 
 ## Administrative data of Greece
 
@@ -38,6 +38,8 @@ We used these packages for the analysis in R:
 ### Conservation
 
 ![Summary of cave protections in Greece](/assets/Website_plots/caves_protection_data_type.png)
+
+![Caves and protected areas in Greece (only borders)](/assets/Plots/map_greece_plot_lines.png)
 
 
 ### Altitude
