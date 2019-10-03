@@ -15,7 +15,7 @@ For descriptive statistics and the respective plots we use [Tidyverse](https://w
 
 ## Conservation of Species and Caves
 
-![Species assesments across Red lists categories ](/assets/Website_plots/red_lists_data_species.png)
+![Species assesments across Red lists categories](/assets/Website_plots/red_lists_data_species.png)
 
 ![IUCN categories per ecological classification](/assets/Plots/iucn_species_classification_barplot_grid.jpeg)
 
