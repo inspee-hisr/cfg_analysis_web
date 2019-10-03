@@ -29,9 +29,9 @@ For each cave, the following information is provided: The Greek name of the cave
 
 [Tidyverse](https://www.tidyverse.org) is used for 
 
-* importing ( [readr](https://readr.tidyverse.org)) and exporting
-* plotting ( [ggplot2](https://ggplot2.tidyverse.org)) and 
-* manipulating data ( [dplyr](https://dplyr.tidyverse.org))
+* importing ([readr](https://readr.tidyverse.org)) and exporting
+* plotting ([ggplot2](https://ggplot2.tidyverse.org)) and 
+* manipulating data ([dplyr](https://dplyr.tidyverse.org))
 
 ### Interactive Map
 
