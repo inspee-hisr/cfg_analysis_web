@@ -25,4 +25,13 @@ CFG Database is developed and maintained by the Hellenic Institute of Speleologi
 
 {% include button.html text="Download Analysis Code" link="https://github.com/inspee-hisr/Cave_Fauna_Greece_Analysis" icon="github" %}
 
+### Contact form
+
+For any comment and/or question please don't hesitate to contact
+
+{% include site-form.html %}
+
+``` html
+{% raw %}{% include site-form.html %}{% endraw %}
+```
 
