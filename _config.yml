@@ -40,8 +40,8 @@ paginate: 2 # jekyll-paginate > items per page
 paginate_path: blog/page:num # jekyll-paginate > blog page
 jekyll-mentions: https://twitter.com # jekyll-mentions > service used when @replying
 twitter:
-  username: DavidDarnes # jekyll-seo-tag > Owners twitter username
-author: DavidDarnes # jekyll-seo-tag > default author
+  username: unonoctium # jekyll-seo-tag > Owners twitter username
+author: SavvasParagkamian # jekyll-seo-tag > default author
 social: # jekyll-seo-tag > social overrides
   name: David Darnes # jekyll-seo-tag > real name
   links:  # jekyll-seo-tag > social aliases (sameAs)
@@ -82,7 +82,7 @@ defaults:
 encoding: utf-8 # Make sure the encoding is right
 lang: en-GB # Set the site language
 title: "CFG Statistics" # Site name or title, also used in jekyll-seo-tag
-logo: "CFG_statistics/assets/logos/logo.svg" # Site logo, also used in jekyll-seo-tag
+logo: "/assets/logos/logo.svg" # Site logo, also used in jekyll-seo-tag
 description: "CFG Statistics contains descriptive statistics, numerical analysis and spatial analysis for the Cave Fauna of Greece Database."
 url: "https://inspee-hisr.github.io/" # Site url, also used in jekyll-seo-tag
 baseurl: "/CFG_statistics"
@@ -126,7 +126,7 @@ navigation_footer:
 
 social_links: # Appears in sidebar. Set the urls then uncomment and comment out as desired
   GitHub: https://github.com/inspee-hisr
-  link: https://www.inspee.gr
+  link: https://database.inspee.gr
   facebook: https://www.facebook.com/inspeeGR/
   #RSS: /feed.xml
 
