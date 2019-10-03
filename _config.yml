@@ -107,16 +107,16 @@ favicons: # Favicons are also used in the manifest file. Syntax is 'size: path'
 
 # 9. Site navigation
 navigation_header:
-- title: Home
+- title: About
   url: /
-- title: Elements
-  url: /elements/
-- title: Blog
-  url: /blog/
-- title: Categories
-  url: /categories/
-- title: Search
-  url: /search/
+- title: Statistics
+  url: /statistics/
+- title: Spatial Analysis
+  url: /spatial_analysis/
+- title: Crete
+  url: /crete/
+#- title: Search
+#  url: /search/
 - title: Map
   url: https://savvas-paragkamian.shinyapps.io/Spatial_caves_CFG/
 
