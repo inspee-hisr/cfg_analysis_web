@@ -65,8 +65,6 @@ The database schema was designed so that each table holds discrete data and a se
 
 All code is written in [R Markdown](https://rmarkdown.rstudio.com) scripts for reproducibility. 
 
-{% include button.html text="Download Data" link="https://github.com/inspee-hisr/CFG_analysis/tree/master/assets/Data" icon="github" %}
-
 {% include button.html text="Download Analysis Code" link="https://github.com/inspee-hisr/CFG_analysis/tree/master/assets" icon="github" %}
 
 
