@@ -629,7 +629,7 @@ caves_protection_data %>% group_by(Protection_Type) %>% summarise(number_of_cave
 ggplot(.)+
   geom_col(aes(x=Protection_Type, y= number_of_caves, fill=Protection_Type),show.legend = F)+
   geom_text(aes(x =Protection_Type,y= number_of_caves, label=number_of_caves), position=position_dodge(width=0.7), vjust=-0.25,size=2.8)+
-  scale_y_continuous(breaks = seq(0,250,25),limits = c(0,250))+
+  scale_y_continuous(breaks = seq(0,300,25),limits = c(0,300))+
   ggtitle("Caves in Greece that are protected")+
   labs(x="Protection", y= "Number of caves")+
   theme_bw()+
