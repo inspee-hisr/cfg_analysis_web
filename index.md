@@ -1,7 +1,7 @@
 ---
 title: Cave Fauna of Greece Analysis
 excerpt: "CFG Statistics contains descriptive statistics, numerical analysis and spatial analysis for the Cave Fauna of Greece Database."
-aside: true
+aside: false
 ---
 
 
