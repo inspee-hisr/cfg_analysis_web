@@ -117,12 +117,9 @@ navigation_header:
   url: /spatial_analysis/
 - title: Crete
   url: /crete/
-- title: Maps
-  url: /map/
-- title: Ele
-  url: /elements/
 - title: Map
-  url: https://savvas-paragkamian.shinyapps.io/Spatial_caves_CFG/
+  url: /map/
+
 
 navigation_footer:
 - title: Created by INSPEE
