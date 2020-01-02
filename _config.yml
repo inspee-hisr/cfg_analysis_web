@@ -113,8 +113,8 @@ navigation_header:
   url: /statistics/
 - title: Spatial Analysis
   url: /spatial_analysis/
-- title: Crete
-  url: /crete/
+#- title: Crete
+#  url: /crete/
 - title: Maps
   url: /map/
 - title: Ele
