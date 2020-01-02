@@ -115,8 +115,6 @@ navigation_header:
   url: /spatial_analysis/
 - title: Crete
   url: /crete/
-- title: demo
-  url: /demo/
 - title: Map
   url: https://savvas-paragkamian.shinyapps.io/Spatial_caves_CFG/
 
