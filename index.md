@@ -4,7 +4,6 @@ excerpt: "CFG Statistics contains descriptive statistics, numerical analysis and
 aside: true
 ---
 
-
 [CFG Database](https://database.inspee.gr), a unique and powerful tool for research and conservation of the cave fauna of Greece, was developed within the framework of the project “Conservation of the Cave Fauna of Greece” funded by MAVA foundation and WWF Greece. It was compiled after gathering, critically evaluating and integrating all taxonomic and faunistic information for species recorded in the caves of Greece. In addition, It includes all species recorded up to 2019 and currently regarded as valid. CFG Database is developed and maintained by the [Hellenic Institute of Speleological Research](https://www.inspee.gr).
 
 This website serves as supplementary information and insights repository about the CFG Database. All analyses are conducted in R Programming language using multiple packages.
@@ -67,5 +66,7 @@ The database schema was designed so that each table holds discrete data and a se
 All code is written in [R Markdown](https://rmarkdown.rstudio.com) scripts for reproducibility. 
 
 {% include button.html text="Download Analysis Code" link="https://github.com/inspee-hisr/CFG_analysis/tree/master/assets" icon="github" %}
+
+
 
 
