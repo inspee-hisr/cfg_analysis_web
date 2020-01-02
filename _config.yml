@@ -117,6 +117,8 @@ navigation_header:
   url: /crete/
 - title: Maps
   url: /map/
+- title: Ele
+  url: /elements/
 - title: Map
   url: https://savvas-paragkamian.shinyapps.io/Spatial_caves_CFG/
 
