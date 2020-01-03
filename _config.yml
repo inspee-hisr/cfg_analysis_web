@@ -107,8 +107,7 @@ favicons: # Favicons are also used in the manifest file. Syntax is 'size: path'
   1024: '/assets/logos/logo@1024px.png'
 
 # 9. Site navigation
-navigation_header: 
-
+navigation_header:
 - title: Info
   url: /
 - title: Statistics
