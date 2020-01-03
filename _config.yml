@@ -10,7 +10,7 @@
 # 9. Site navigation
 
 # 1. Files excluded from Jekyll builds
-exclude: 
+exclude:
 - README.md
 - elements.md
 - CODE_OF_CONDUCT.md
