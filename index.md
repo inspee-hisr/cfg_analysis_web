@@ -1,99 +1,73 @@
 ---
-title: About Alembic
+title: Cave Fauna of Greece Analysis
+excerpt: "CFG Statistics contains descriptive statistics, numerical analysis and spatial analysis for the Cave Fauna of Greece Database."
+aside: true
 layout: page
-feature_text: |
-  ## Alembic
-  A Jekyll boilerplate theme designed to be a starting point for any Jekyll website
-feature_image: "https://picsum.photos/1300/400?image=989"
-excerpt: "Alembic is a starting point for [Jekyll](https://jekyllrb.com/) projects. Rather than starting from scratch, this boilerplate is designed to get the ball rolling immediately. Install it, configure it, tweak it, push it."
 ---
 
-Alembic is a starting point for [Jekyll](https://jekyllrb.com/) projects. Rather than starting from scratch, this boilerplate is designed to get the ball rolling immediately. Install it, configure it, tweak it, push it.
+[CFG Database](https://database.inspee.gr), a unique and powerful tool for research and conservation of the cave fauna of Greece, was developed within the framework of the project “Conservation of the Cave Fauna of Greece” funded by MAVA foundation and WWF Greece. It was compiled after gathering, critically evaluating and integrating all taxonomic and faunistic information for species recorded in the caves of Greece. In addition, It includes all species recorded up to 2019 and currently regarded as valid. CFG Database is developed and maintained by the [Hellenic Institute of Speleological Research](https://www.inspee.gr).
 
-{% include button.html text="Fork it" icon="github" link="https://github.com/daviddarnes/alembic" color="#0366d6" %} {% include button.html text="Tweet it" icon="twitter" link="https://twitter.com/intent/tweet/?url=https://alembic.darn.es&text=Alembic%20-%20A%20Jekyll%20boilerplate%20theme&via=DavidDarnes" color="#0d94e7" %} {% include button.html text="Install Alembic ⚗️" link="https://github.com/daviddarnes/alembic#installation" %} {% include button.html text="Tip me $5 💸" link="https://www.paypal.me/daviddarnes/5usd" color="#333333" %}
+This website serves as supplementary information and insights repository about the CFG Database. All analyses are conducted in R Programming language using multiple packages.
 
-## Features
+### Data integration
 
-- Available as a **theme gem** and **GitHub Pages** theme
-- Simple and elegant design that can be used out of the box or as solid starting point
-- Tested in all major browsers, including **IE and Edge**
-- Built in **Service Worker** so it can work offline and on slow connections
-- **Configurable colours** and typography in a single settings file
-- Extensive set of **shortcodes** to include various elements; such as buttons, icons, figure images and more
-- Solid **typographic framework** from [Sassline](https://sassline.com/)
-- Configurable navigation via a single file
-- Modular Jekyll components
-- Post category support in the form of a single post index page grouped by category
-- Built in live search using JavaScript
-- **Contact form** built in using [Formspree](https://formspree.io/)
-- Designed with **[Siteleaf](http://www.siteleaf.com/)** in mind
-- Has 9 of the most popular networks as performant sharing buttons
-- Has documentation
+Data integration is about enriching data with other types of data. This process was human curated and was supported by many computational tools. The database was checked for possible gaps in data, errors or inconsistencies in respect to the rules of zoological nomenclature, redundancy, and inconsistencies among parts. The taxonomic reference system was harmonized with the Pan-European Species directories Infrastructure (PESI, EU-nomen).
 
-## Examples
+For each species, the following information is provided: scientific name and authorship; a map displaying the cave(s) location(s) recorded; higher taxonomy; distribution; distribution in caves of Greece; conservation status; protection status; links to Fauna Europaea, GBIF, IUCN red list, PESI & NCBI if available; species literature references. Species synonyms are only exceptionally provided as the user can see them at the linked databases.
 
-Here are a few examples of Alembic out in the wild being used in a variety of ways:
+Packages for the CFG Database enrichment:
 
-- [bitpodcast.com](https://bitpodcast.com/)
-- [joelcagedesign.com](https://joelcagedesign.com/)
-- [bawejakunal.github.io](https://bawejakunal.github.io/)
-- [case2111.github.io](http://case2111.github.io/)
-- [www.10people.co.uk](http://www.10people.co.uk/)
-- [hrkeni.me](http://hrkeni.me/)
-- [ccs17.bsc.es](https://ccs17.bsc.es/)
-- [karateca.org](http://www.karateca.org/)
+* species distribution data from [GBIF](https://www.gbif.org) using the [rgbif package](https://www.gbif.org/tool/81747/rgbif)
+* species taxonomy with the [taxise package](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3901538/)
+* species IUCN characterisation using the [rredlist package](https://docs.ropensci.org/rredlist/) and the [red package](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC5665006/)
 
-## Installation
+For each cave, the following information is provided: The Greek name of the cave in Latin characters using the Greek – ISO 843 transliteration system (see [online portal](http://www.passport.gov.gr/elot-743.html) ); a map displaying the location; the cave name(s) used in literature; closest settlement in the context of the 1/1/2011 administrative system established in Greece (Kallikratis reform, Greek Law 3852/2010); brief description; protection status; species list; cave literature references; species literature references.
 
-### Quick setup
+* Greece administrative data from [geodata.gov.gr](http://geodata.gov.gr/en/dataset?tags=administrative+units)
+* Meteorological data of Greece using the [hydroscoper package](https://ropensci.github.io/hydroscoper/)
 
-To give you a running start I've put together some starter kits that you can download, fork or even deploy immediately:
+### Data handling
 
-- ⚗️🍨 Vanilla Jekyll starter kit  
-  [![Deploy to Netlify](https://www.netlify.com/img/deploy/button.svg)](https://app.netlify.com/start/deploy?repository=https://github.com/daviddarnes/alembic-kit){:style="background: none"}
-- ⚗️🌲 Forestry starter kit  
-  [![Deploy to Forestry](https://assets.forestry.io/import-to-forestry.svg)](https://app.forestry.io/quick-start?repo=daviddarnes/alembic-forestry-kit&engine=jekyll){:style="background: none"}  
-  [![Deploy to Netlify](https://www.netlify.com/img/deploy/button.svg)](https://app.netlify.com/start/deploy?repository=https://github.com/daviddarnes/alembic-forestry-kit){:style="background: none"}
-- ⚗️💠 Netlify CMS starter kit  
-  [![Deploy to Netlify](https://www.netlify.com/img/deploy/button.svg)](https://app.netlify.com/start/deploy?repository=https://github.com/daviddarnes/alembic-netlifycms-kit&stack=cms){:style="background: none"}
+[Tidyverse](https://www.tidyverse.org) is used for 
 
-- ⚗️:octocat: GitHub Pages with remote theme kit  
-  {% include button.html text="Download kit" link="https://github.com/daviddarnes/alembic-kit/archive/remote-theme.zip" color="#24292e" %}
-- ⚗️🚀 Stackbit starter kit  
-  [![Create with Stackbit](https://assets.stackbit.com/badge/create-with-stackbit.svg)](https://app.stackbit.com/create?theme=https://github.com/daviddarnes/alembic-stackbit-kit){:style="background: none"}
+* importing ([readr](https://readr.tidyverse.org)) and exporting
+* plotting ([ggplot2](https://ggplot2.tidyverse.org)) and 
+* manipulating data ([dplyr](https://dplyr.tidyverse.org))
 
-### As a Jekyll theme
+### Interactive Map
 
-1. Add `gem "alembic-jekyll-theme"` to your `Gemfile` to add the theme as a dependancy
-2. Run the command `bundle install` in the root of project to install the theme and its dependancies
-3. Add `theme: alembic-jekyll-theme` to your `_config.yml` file to set the site theme
-4. Run `bundle exec jekyll serve` to build and serve your site
-5. Done! Use the [configuration](#configuration) documentation and the example [`_config.yml`](https://github.com/daviddarnes/alembic/blob/master/_config.yml) file to set things like the navigation, contact form and social sharing buttons
+For the Interactive Map we use the [leaflet package](https://rstudio.github.io/leaflet/) which we incorporated in a [Shiny Application](https://www.shinyapps.io).
 
-### As a GitHub Pages remote theme
+### Technical specification and database design
 
-1. Add `gem "jekyll-remote-theme"` to your `Gemfile` to add the theme as a dependancy
-2. Run the command `bundle install` in the root of project to install the jekyll remote theme gem as a dependancy
-3. Add `jekyll-remote-theme` to the list of `plugins` in your `_config.yml` file
-4. Add `remote_theme: daviddarnes/alembic` to your `_config.yml` file to set the site theme
-5. Run `bundle exec jekyll serve` to build and serve your site
-6. Done! Use the [configuration](#configuration) documentation and the example [`_config.yml`](https://github.com/daviddarnes/alembic/blob/master/_config.yml) file to set things like the navigation, contact form and social sharing buttons
+The CFG database and the tool were designed with the KISS principle in mind while taking care to apply best coding practices.
 
-### As a Boilerplate / Fork
+* Programming language: PHP, Javascript
+* Interface language: HTML, CSS
+* Database: MySQL
+* Frameworks used: CodeIgniter, Bootstrap, AngularJS
+* Plug-ins & Libraries: Leaflet, Leaflet-ajax, TinyMCE
 
-_(deprecated, not recommended)_
+The database schema was designed so that each table holds discrete data and a separate table holds their relations . By utilizing MySQL’s “views” feature, “virtual tables” can be generated by aggregating data from the regular tables. We have carefully designed special views that contain only the necessary amount of data for most types of queries utilized in the application. For future revisions of the application, more data fields and more views could be created without breaking the existing functionality.
 
-1. [Fork the repo](https://github.com/daviddarnes/alembic#fork-destination-box)
-2. Replace the `Gemfile` with one stating all the gems used in your project
-3. Delete the following unnecessary files/folders: `.github`, `LICENSE`, `screenshot.png`, `CNAME` and `alembic-jekyll-theme.gemspec`
-4. Run the command `bundle install` in the root of project to install the jekyll remote theme gem as a dependancy
-5. Run `bundle exec jekyll serve` to build and serve your site
-6. Done! Use the [configuration](#configuration) documentation and the example [`_config.yml`](https://github.com/daviddarnes/alembic/blob/master/_config.yml) file to set things like the navigation, contact form and social sharing buttons
+## Contributors
 
-## Customising
+- Kaloust Paragamian: Gathering of literature, literature review, database design, data validation & harmonization, editing, and data uploading
 
-When using Alembic as a theme means you can take advantage of the file overriding method. This allows you to overwrite any file in this theme with your own custom file, simply by matching the file name and path. The most common example of this would be if you want to add your own styles or change the core style settings.
+- Manoussos Poulinakis: Database design and development, website development
 
-To add your own styles copy the [`styles.scss`](https://github.com/daviddarnes/alembic/blob/master/assets/styles.scss) into your own project with the same file path (`assets/styles.scss`). From there you can add your own styles, you can even optionally ignore the theme styles by removing the `@import "alembic";` line.
+- Savvas Paragkamian: Data cleansing and standardization, data integration, statistic analysis, spatial analysis and repository maintaining
 
-If you're looking to set your own colours and fonts you can overwrite them by matching the variable names from the [`_settings.scss`](https://github.com/daviddarnes/alembic/blob/master/_sass/_settings.scss) file in your own `styles.scss`, make sure to state them before the `@import "alembic";` line so they take effect. The settings are a mixture of custom variables and settings from [Sassline](https://medium.com/@jakegiltsoff/sassline-v2-0-e424b2881e7e) - follow the link to find out how to configure the typographic settings.
+- Ioannis Nikoloudakis: Literature review, data collection and preparation for import 
+
+- Dora Moulou: Data collection and preparation for import
+
+### Raw Data and Code
+
+All code is written in [R Markdown](https://rmarkdown.rstudio.com) scripts for reproducibility. 
+
+{% include button.html text="Download Analysis Code" link="https://github.com/inspee-hisr/CFG_analysis/tree/master/assets" icon="github" %}
+
+
+
+
