@@ -108,6 +108,8 @@ favicons: # Favicons are also used in the manifest file. Syntax is 'size: path'
 
 # 9. Site navigation
 navigation_header:
+- title: Statistics
+  url: /statistics/
 - title: About
   url: /index/
 - title: Statistics
@@ -118,7 +120,6 @@ navigation_header:
   url: /crete/
 - title: Map
   url: /map/
-
 
 navigation_footer:
 - title: Created by INSPEE
