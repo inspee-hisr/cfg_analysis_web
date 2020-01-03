@@ -112,8 +112,6 @@ navigation_header:
   url: /statistics/
 - title: About
   url: /index/
-- title: Statistics
-  url: /statistics/
 - title: Spatial Analysis
   url: /spatial_analysis/
 - title: Crete
