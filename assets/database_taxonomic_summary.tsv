@@ -20,13 +20,13 @@ Geophilomorpha	 	1	1	1
 Lithobiomorpha	 	1	3	16
 Scolopendromorpha	 	2	2	5
 Scutigeromorpha	 	1	1	1
-Diplopoda	4	7	25	43
+Diplopoda	4	7	25	42
 Callipodida	 	1	5	13
 Glomerida	 	2	2	6
 Julida	 	2	13	16
-Polydesmida	 	2	5	8
-Entognatha	3	7	13	21
-Diplura	 	2	5	12
+Polydesmida	 	2	5	7
+Entognatha	3	7	13	26
+Diplura	 	2	5	17
 Entomobryomorpha	 	1	1	1
 Poduromorpha	 	4	7	8
 Hexanauplia	2	3	16	31
@@ -45,8 +45,8 @@ Psocoptera	 	4	4	5
 Siphonaptera	 	1	1	1
 Trichoptera	 	2	5	10
 Zygentoma	 	2	2	2
-Malacostraca	4	23	40	89
-Amphipoda	 	4	6	6
+Malacostraca	4	23	40	91
+Amphipoda	 	4	6	8
 Decapoda	 	1	2	2
 Isopoda	 	17	31	80
 Thermosbaenacea	 	1	1	1
@@ -90,4 +90,4 @@ Gastropoda	2	14	32	65
 Littorinimorpha	 	1	2	2
 Stylommatophora	 	13	30	63
  	 	 	 	 
-TOTAL	64	190	432	853
+TOTAL	64	190	432	859

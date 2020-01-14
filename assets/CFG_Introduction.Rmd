@@ -1349,7 +1349,7 @@ census_long_man_reference_all_species_classification <- census_long_man_referenc
 species_occurrence_accumulation_classification_plot <- ggplot()+
   geom_line(data=census_long_man_reference_all_species_classification,aes(x=Year, y= Cumulative_occurance,color=Classification),size=1,show.legend = T)+
   #ggtitle("Class")+
-  scale_x_continuous(breaks = seq(1860,2020,10),limits = c(1860,2020),expand=c(0.015,0))+
+  scale_x_continuous(breaks = seq(1860,2030,10),limits = c(1860,2030),expand=c(0.015,0))+
   scale_y_continuous(breaks = seq(0,950,100), limits = c(0,913),expand = c(0.01,0))+
   scale_color_manual(values =c("Endemic species to Greece"="lightcoral","Troglophile"="paleturquoise","Troglobiont"="darkolivegreen3","All species"="deepskyblue"))+
   labs(x="Years",y="Cumulative number of species")+
