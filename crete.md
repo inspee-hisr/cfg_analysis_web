@@ -4,7 +4,7 @@ aside: false
 ---
 
 
-Crete has been the most studies region of Greece regarding cave fauna. This section includes the analysis of the cretan cave fauna.
+Crete has been the most studied region of Greece regarding cave fauna. This section includes the analysis of the cretan cave fauna.
 
 ![Caves sampled in Greece. Crete has been the most studied region in Greece](/assets/Plots/caves_Region_barplot.jpeg)
 
