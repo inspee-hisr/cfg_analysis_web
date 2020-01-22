@@ -62,7 +62,7 @@ The database schema was designed so that each table holds discrete data and a se
 
 - Dora Moulou: Data collection and preparation for import
 
-## Terms of use & Citation
+### Terms of use & Citation
 
 Except where otherwise noted, content on this site is licensed under a Creative Commons Attribution CC-BY License. The re-distribution of the entire CFG database analysis or large parts of it is not permitted unless by prior written agreement. Data and code are free to use on condition that they are cited. A recommended citation style is provided on each page.
 
@@ -77,7 +77,7 @@ All code is written in [R Markdown](https://rmarkdown.rstudio.com) scripts for r
 
 {% include button.html text="Download Analysis Code" link="https://github.com/inspee-hisr/CFG_analysis/tree/master/assets" icon="github" %}
 
-### Feedback
+#### Feedback
 
 Any feedback on the content and usability of the database analysis would be highly appreciated. Suggestions for improvements are also very welcome. Please contact [Savvas Paragkamian](s.paragamian@gmail.com)
 
