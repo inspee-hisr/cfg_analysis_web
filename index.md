@@ -77,6 +77,9 @@ All code is written in [R Markdown](https://rmarkdown.rstudio.com) scripts for r
 
 {% include button.html text="Download Analysis Code" link="https://github.com/inspee-hisr/CFG_analysis/tree/master/assets" icon="github" %}
 
+### Feedback
+
+Any feedback on the content and usability of the database analysis would be highly appreciated. Suggestions for improvements are also very welcome. Please contact [Savvas Paragkamian](s.paragamian@gmail.com)
 
 
 
