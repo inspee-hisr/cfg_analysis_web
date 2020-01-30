@@ -62,14 +62,11 @@ The database schema was designed so that each table holds discrete data and a se
 
 - Dora Moulou: Data collection and preparation for import
 
-## Terms of use & Citation
+### Terms of use & Citation
 
-Except where otherwise noted, content on this site is licensed under a Creative Commons Attribution CC-BY License. The re-distribution of the entire CFG database analysis or large parts of it is not permitted unless by prior written agreement. Data and code are free to use on condition that they are cited. A recommended citation style is provided on each page.
-
-The database as a whole is to be cited as follows: 
+Except where otherwise noted, content on this site is licensed under a Creative Commons Attribution CC-BY License. The re-distribution of the entire CFG database analysis or large parts of it is not permitted unless by prior written agreement. Data and code are free to use on condition that they are cited. Recommended citation style:
 
 Paragamian, K. and Paragkamian, S.. Cave fauna of Greece database analysis (CFG Analysis) - Hellenic Institute of Speleological Research. Available at https://inspee-hisr.github.io/CFG_analysis/. Accessed (date)
-
 
 ### Raw Data and Code
 
@@ -77,6 +74,9 @@ All code is written in [R Markdown](https://rmarkdown.rstudio.com) scripts for r
 
 {% include button.html text="Download Analysis Code" link="https://github.com/inspee-hisr/CFG_analysis/tree/master/assets" icon="github" %}
 
+#### Feedback
+
+Any feedback on the content and usability of the database analysis would be highly appreciated. Suggestions for improvements are also very welcome. Please contact *s.paragkamian at gmail.com*
 
 
 
