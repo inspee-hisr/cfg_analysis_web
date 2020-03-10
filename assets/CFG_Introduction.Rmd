@@ -690,7 +690,7 @@ red_lists_species$Categories <- factor(red_lists_species$Categories,levels = c("
 red_lists_data_species_plot <- ggplot()+
   geom_col(data = red_lists_species, aes(x=Categories, y= number_of_species, fill=Red_List,width=0.9), position = position_dodge(width = 0.9),show.legend = T)+
   geom_text(data = red_lists_species,aes(x =Categories,y= number_of_species, label=number_of_species,group=Red_List), position=position_dodge(width=0.9), vjust=-0.25,size=6)+
-  scale_y_continuous(breaks = seq(0,750,50),limits = c(0,750),expand = c(0.01,0.4))+
+  scale_y_continuous(breaks = seq(0,800,50),limits = c(0,800),expand = c(0.01,0.4))+
   scale_fill_manual(values = c("lightpink1","firebrick1"),name="")+
   labs(x="Categories", y= "Number of species")+
   theme_bw()+

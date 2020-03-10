@@ -397,7 +397,7 @@ natura_v30_vs_natura <- caves_in_over_NEW_natura_v30 %>% distinct(Cave_ID,Cave_N
 natura_v30_vs_natura_codes <- natura_v30_vs_natura %>% distinct(SITECODE,Caves_Protection_Code)
 
 
-new_natura_codes <- natura_v30_vs_natura[which(!(natura_v30_vs_natura$SITECODE_v30 %in% caves_protection_data_natura$Caves_Protection_Code)),][,2] %>% distinct(.) %>% left_join(names_natura2000shapefile, by=c("SITECODE_v30"="CODE")) %>% mutate(Law="Law 3937/2011 (OGG/Α 60/31.03.2011), Joint Ministerial Decision 50743/2017 (OGG 4432/B/15.12.17).",Link=paste0(' <a href="http://natura2000.eea.europa.eu/Natura2000/SDF.aspx?site=',SITECODE_v30,'" target="_blank"> Check site’s Standard Data Form</a>')) %>% mutate(Site_Description=paste0(SITECODE_v30," - ",NAME_LATIN_lower_letters," (",SITETYPE_NATURA,"): ",Law," ",Link))
+#new_natura_codes <- natura_v30_vs_natura[which(!(natura_v30_vs_natura$SITECODE_v30 %in% caves_protection_data_natura$Caves_Protection_Code)),][,2] %>% distinct(.) %>% left_join(names_natura2000shapefile, by=c("SITECODE_v30"="CODE")) %>% mutate(Law="Law 3937/2011 (OGG/Α 60/31.03.2011), Joint Ministerial Decision 50743/2017 (OGG 4432/B/15.12.17).",Link=paste0(' <a href="http://natura2000.eea.europa.eu/Natura2000/SDF.aspx?site=',SITECODE_v30,'" target="_blank"> Check site’s Standard Data Form</a>')) %>% mutate(Site_Description=paste0(SITECODE_v30," - ",NAME_LATIN_lower_letters," (",SITETYPE_NATURA,"): ",Law," ",Link))
 
 ```
 

@@ -1,8 +1,8 @@
 TAXA	Orders	Families	Genera	Species
 Phylum Arthropoda	 	 	 	 
-Arachnida	12	56	118	259
+Arachnida	12	57	120	262
 Amblypygi	 	1	1	1
-Araneae	 	25	69	143
+Araneae	 	26	71	146
 Ixodida	 	1	2	3
 Mesostigmata	 	2	4	4
 Opiliones	 	4	13	17
@@ -20,22 +20,23 @@ Geophilomorpha	 	1	1	1
 Lithobiomorpha	 	1	3	16
 Scolopendromorpha	 	2	2	5
 Scutigeromorpha	 	1	1	1
-Diplopoda	4	7	25	42
+Diplopoda	4	7	25	43
 Callipodida	 	1	5	13
 Glomerida	 	2	2	6
-Julida	 	2	13	16
+Julida	 	2	13	17
 Polydesmida	 	2	5	7
-Entognatha	3	7	13	26
+Entognatha	4	9	15	29
+Collembola	 	2	2	2
 Diplura	 	2	5	17
 Entomobryomorpha	 	1	1	1
-Poduromorpha	 	4	7	8
-Hexanauplia	2	3	16	31
-Cyclopoida	 	1	8	15
-Harpacticoida	 	2	8	16
-Insecta	12	46	126	245
+Poduromorpha	 	4	7	9
+Hexanauplia	2	4	17	33
+Cyclopoida	 	1	8	16
+Harpacticoida	 	3	9	17
+Insecta	12	46	126	248
 Archaeognatha	 	1	3	3
 Blattodea	 	1	1	1
-Coleoptera	 	14	73	143
+Coleoptera	 	14	73	146
 Diptera	 	9	17	23
 Hemiptera	 	2	3	3
 Hymenoptera	 	1	1	1
@@ -65,15 +66,16 @@ Caudata	 	1	1	1
 Aves	2	2	2	2
 Passeriformes	 	1	1	1
 Strigiformes	 	1	1	1
-Mammalia	3	6	14	32
+Mammalia	3	6	15	33
 Carnivora	 	2	3	3
-Chiroptera	 	3	9	27
+Chiroptera	 	3	10	28
 Rodentia	 	1	2	2
 Phylum Annelida	 	 	 	 
-Clitellata	3	4	13	17
+Clitellata	4	5	14	18
 Branchiobdellida	 	1	1	1
 Crassiclitellata	 	2	9	13
 Enchytraeida	 	1	3	3
+Haplotaxida	 	1	1	1
 Phylum Nematoda	 	 	 	 
 Enoplea	3	7	9	9
 Dorylaimida	 	4	4	4
@@ -86,8 +88,8 @@ Rhabditophora	2	2	2	2
 Lecithoepitheliata	 	1	1	1
 Tricladida	 	1	1	1
 Phylum Mollusca	 	 	 	 
-Gastropoda	2	14	32	65
-Littorinimorpha	 	1	2	2
+Gastropoda	2	15	32	65
+Littorinimorpha	 	2	2	2
 Stylommatophora	 	13	30	63
  	 	 	 	 
-TOTAL	64	190	432	859
+TOTAL	66	194	439	872

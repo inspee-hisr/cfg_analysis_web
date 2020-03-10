@@ -574,6 +574,13 @@ ggsave("crete_only_species_class_barplot_endemic.jpeg", plot = last_plot(), devi
 
 ```
 
+```{r, eval=FALSE}
+crete_only_species <- census_all_species_all_caves %>% filter(Distribution=="Endemic to Greece") %>% distinct( Species,Class,Region) %>% group_by(Species) %>% mutate(number_of_regions=n()) %>% filter(number_of_regions==1 & Region=="Kriti")
+
+#write_delim(crete_only_species,"crete_only_species.tsv",col_names = T,delim = "\t")
+```
+
+
 ### Ecological classification
 
 ```{r, warning=FALSE, message=FALSE, echo=FALSE}
