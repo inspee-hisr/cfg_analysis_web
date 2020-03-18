@@ -6,3 +6,7 @@ Gemfile.lock
 **/Gemfile.lock
 
 .Rproj.user
+
+Data/
+
+Shapefiles/
