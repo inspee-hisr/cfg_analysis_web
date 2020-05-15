@@ -85,8 +85,8 @@ lang: en-GB # Set the site language
 title: "CFG Analysis" # Site name or title, also used in jekyll-seo-tag
 logo: "/assets/logos/logo.svg" # Site logo, also used in jekyll-seo-tag
 description: "CFG Analysis contains descriptive statistics, numerical analysis and spatial analysis for the Cave Fauna of Greece Database."
-url: "https://inspee-hisr.github.io" # Site url, also used in jekyll-seo-tag
-baseurl: "/CFG_analysis"
+url: "https://cfg-analysis.inspee.gr/" # Site url, also used in jekyll-seo-tag
+baseurl: ""
 repo: "https://github.com/inspee-hisr/CFG_analysis"
 email: "s.paragamian@gmail.com"
 # disqus: "alembic-1" # Blog post comments, uncomment the option and set the site ID from your Disqus account
