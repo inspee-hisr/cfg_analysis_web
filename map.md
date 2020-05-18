@@ -6,5 +6,6 @@ excerpt: "This map was created using Shiny application"
 
 This is the interactive map with the caves of Greece.
 
-<iframe id="example1" src="https://savvas-paragkamian.shinyapps.io/Spatial_caves_CFG/" height="315" width="560" allowfullscreen="" frameborder="0"></iframe>
-
+<div>
+  <iframe src="https://savvas-paragkamian.shinyapps.io/Spatial_caves_CFG/"></iframe>
+</div>
