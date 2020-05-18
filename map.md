@@ -5,4 +5,6 @@ layout: page
 
 ---
 
-knitr::include_app('https://savvas-paragkamian.shinyapps.io/Spatial_caves_CFG/', height = '600px')
+<div class="container"> 
+  <iframe src='https://savvas-paragkamian.shinyapps.io/Spatial_caves_CFG/'></iframe>
+</div>
