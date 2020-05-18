@@ -1,6 +1,7 @@
 ---
 title: Map
 excerpt: "This map was created using Shiny application"
+layout: page
 
 ---
 
