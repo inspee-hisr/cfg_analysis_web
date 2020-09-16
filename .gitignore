@@ -9,4 +9,5 @@ Gemfile.lock
 
 Data/
 *.icloud
+*.shp
 Shapefiles/
