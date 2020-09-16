@@ -77,9 +77,6 @@ write_bib(x = packages,file = "packages_used.bib")
 
 ```
 
-```{r global_options, include=FALSE,echo=FALSE}
-knitr::opts_chunk$set(fig.pos = 'H')
-```
 
 ```{r, warning=FALSE, message=FALSE, echo=FALSE}
 # Store the file names of the Data folder
