@@ -1,0 +1,1026 @@
+#' ---
+#' title: "Spatial analysis of Cave Fauna of Greece Database"
+#' author: "Hellenic Institute of Speleological Research"
+#' date: '`r Sys.Date()`'
+#' output:
+#'   html_document:
+#'     toc: yes
+#'     toc_depth: 2
+#'     toc_float: yes
+#'   pdf_document:
+#'     toc: yes
+#'     toc_depth: '2'
+#'   word_document:
+#'     toc: yes
+#'     toc_depth: '2'
+#' link-citations: yes
+#' bibliography: packages_used.bib
+#' site: bookdown::bookdown_site
+#' biblio-style: apalike
+#' ---
+#' 
+#' 
+## ---- warning=FALSE, message=FALSE, echo=FALSE---------------------------
+### Working Directory
+
+#setwd("C:/Users/inikoloudakis/Dropbox/INSPEE Team Folder/Conservation of the cave fauna of Greece - MAVA/Cave_Fauna_database/Cave_Fauna_Database_Analysis")
+
+# Data manipulation packages
+library(readxl)
+library(readr)
+library(ggplot2)
+library(scales)
+library(gridExtra)
+library(grid)
+library(reshape2)
+library(dplyr)
+library(knitr)
+library(tidyr)
+library(httr)
+library(broom)
+library(stringr)
+
+## Data for species
+
+library(rredlist)
+library(taxize)
+library(rgbif)
+library(ISOcodes)
+library(spocc)
+
+# Spatial analysis packages
+
+# x <- c("spocc","isocodes","rgbif","taxize","rredlist","raster","RColorBrewer","ggmap", "rgdal", "rgeos", "maptools", "tmap","Rcpp","sp")
+# #install.packages(x) # warning: uncommenting this may take a number of minutes
+# lapply(x, library, character.only = TRUE)
+library(RColorBrewer)
+library(ggmap)
+library(rgdal)
+library(geosphere)
+library(GISTools)
+library(leaflet)
+library(rgeos)
+library(maptools)
+#library(tmap)
+library(Rcpp)
+library(sp)
+library(raster) ##Load the Raster Library
+
+# Species statistics
+
+library(red)
+library(vegan)
+
+packages <- c("readxl","readr","ggplot2","scales","gridExtra","dplyr", "knitr", "tidyr","RColorBrewer","ggmap","rgdal","rgeos","maptools","tmap","Rcpp","sp","raster","broom","red","vegan")
+
+write_bib(x = packages,file = "packages_used.bib")
+
+
+#' 
+#' 
+## ---- warning=FALSE, message=FALSE, echo=FALSE---------------------------
+# Store the file names of the Data folder
+ 
+ data_files <- list.files(path = "Data")
+ 
+ # Data import from Database Export, the files are choosen automatically based on their name. The folder Data must contain only the latest data files.
+ Cave_References <- read_delim(file = paste0("Data/",grep("Cave_References",data_files,value = TRUE)),delim = "\t")
+ 
+ caves <- read_delim(file = paste0("Data/",grep("Caves",data_files,value = TRUE)),delim = "\t")
+ 
+ census <- read_delim(file = paste0("Data/",grep("Census_\\d",data_files,value = TRUE)),delim = "\t")
+ 
+ Census_references <- read_delim(file = paste0("Data/",grep("Census_references",data_files,value = TRUE)),delim = "\t")
+ 
+species <- read_delim(file = paste0("Data/",grep("Species_",data_files,value = TRUE)),delim = "\t") %>% mutate(Classification=gsub(pattern="\\?",replacement = "",x = Classification))# Data import from Database Export
+
+
+#' 
+#' 
+## ---- warning=FALSE, message=FALSE, echo=FALSE---------------------------
+census$species_epithet <- as.character(lapply(strsplit(as.character(census$Species), split=" "), "[", n=2))
+
+census_all_species <- census %>% left_join(species,by=c("Species"="Species_Full_Name"))
+
+census_all_species_all_caves <- census_all_species %>% dplyr::select(-Cave_Name) %>% left_join(caves, by=c("Cave_ID"="Cave_ID"))
+
+census_long_str_man <- strsplit(x = census_all_species$Reference_Short,split = "|",fixed=TRUE)
+census_long_str_man_id <- strsplit(x = census_all_species$Reference_ID,split = "|",fixed=TRUE)
+
+census_long_man <- data_frame(ReferenceShort=unlist(census_long_str_man),reference_id=unlist(census_long_str_man_id),CaveName=rep.int(census_all_species$Cave_Name,times = sapply(census_long_str_man,length)),Cave_ID=rep.int(census_all_species$Cave_ID,times = sapply(census_long_str_man,length)),Census_id=rep.int(census_all_species$Census_ID,times = sapply(census_long_str_man,length)),Species=rep.int(census_all_species$Species,times = sapply(census_long_str_man,length))) %>% group_by(ReferenceShort,Cave_ID,CaveName,Species,Census_id) %>% summarise(n=n()) %>% ungroup() %>% mutate(Species=trimws(Species,"r"))
+
+
+#' 
+#' 
+#' # Spatial analysis of Caves
+#' 
+#' For the creation of the caves geodatabase in r we used multiple packages. 
+#' 
+#' **For spatial analysis**
+#' 
+#' 1. sp package [@R-sp]
+#' 
+#' 2. rgeos package [@R-rgeos]
+#' 
+#' 3. rgdal package [@R-raster]
+#' 
+#' 4. raster package [@R-raster]
+#' 
+#' **For spatial visualisations**
+#' 
+#' 1. maptools package [@R-maptools]
+#' 
+#' 2. tmaps package [@R-tmap]
+#' 
+#' 3. ggmap package [@R-ggmap]
+#' 
+#' 
+#' Each cave location was manually imported to Google Earth. All locations were then exported to a single kml file. In order to handle the data the kml file should be converted to a different format like xlsx. The procedure suggested from google forum:
+#' 
+#' 1. Download the kml file
+#' 2. rename the file to .xml 
+#' 3. from excel 2007 go to Data > From Other Sources > From XML Data Source 
+#' 4. Browse to where you saved the file to impoort into excel. 
+#' 5. Excel will prompt that it can find the schema and will try to make it by it's own, accept it and you should see your data imported successfully.
+#' 
+#' This procedure resulted to a xlsx file with 67 columns and tha names and coordinates of caves were spread across them for some reason.
+#' 
+#' So we used the [online convertor](www.gpsvisualizer.com) which resulted to a txt file with a consistent format.
+#' 
+#' 
+#' ## Caves geographical data
+#' 
+## ---- warning=FALSE, message=FALSE, echo=FALSE---------------------------
+# Caves shape file! Caves Coordinates
+
+# Caves_Database_kml_to_txt <- read_delim(file = "Caves_Database_kml_to_txt_25_09_2017.csv",delim = ";",col_names = T) %>% dplyr::select("name","latitude","longitude")
+
+Caves_Database_kml_to_txt <- caves %>% dplyr::select(Cave_Name,Cave_ID,Latitude, Longitude) %>% na.omit()
+
+Caves_Database_kml_to_txt$Latitude <- as.numeric(Caves_Database_kml_to_txt$Latitude)
+Caves_Database_kml_to_txt$Longitude <- as.numeric(Caves_Database_kml_to_txt$Longitude)
+
+Caves_Database_kml_to_txt$ID <- as.character(seq(1:nrow(Caves_Database_kml_to_txt)))
+
+Caves_Database_kml_to_txt_shapefile_wgs84 <- Caves_Database_kml_to_txt
+
+coordinates(Caves_Database_kml_to_txt_shapefile_wgs84)<-~Longitude+Latitude
+proj4string(Caves_Database_kml_to_txt_shapefile_wgs84) <- CRS("+proj=longlat +datum=WGS84")# CRS("+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs")  # this is WGS84
+
+Caves_Database_kml_to_txt_shapefile <- spTransform(Caves_Database_kml_to_txt_shapefile_wgs84, CRS( "+proj=longlat +datum=GGRS87 +no_defs"))
+
+species_occurencies_unique_caves_without <- caves[which((is.na(caves$Latitude))),]
+
+
+#' 
+#' Are the cave names in the species occurencies file the same with the Google Earth data?
+#' 
+#' There are `r nrow(caves)` caves that have been sampled.
+#' 
+#' ## Administrative data of Greece
+#' 
+#' We downloaded the greek municipality boundaries [Kallikratis plan](http://geodata.gov.gr/en/dataset/oria-demon-kallikrates) in the epsg 4326 format. In this format the axis order is Latitude followed by Longitude. 
+#' The Greek names of municipalities were converted using the ISO 843 traslitaration system from this [online portal](http://www.passport.gov.gr/elot-743.html).
+#' 
+#' It is preferable to download shapefiles because they are immediatly imported into the Spatial objects. 
+#' 
+#' 
+## ---- warning=FALSE, message=FALSE, echo=FALSE---------------------------
+# Hellenic settlements 
+
+# hellenic_settlements <- maptools::readShapePoly("hellenic_settlements/hellenic_settlements",verbose=TRUE)
+
+# proj4string(hellenic_settlements) <- CRS("+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs")  # this is WGS84
+
+# Municipalities shape file
+
+
+municipalities_shape_file_original <- rgdal::readOGR("Shapefiles/municipalities_shape_file/municipalities_Kallikratis_plan_Greece.shp",verbose=TRUE)
+
+municipalities_shape_file <- spTransform(municipalities_shape_file_original, CRS("+proj=longlat +datum=GGRS87 +no_defs"))
+
+#proj4string(municipalities_shape_file) <- CRS("+proj=longlat +datum=WGS84")# CRS("+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs")  # this is WGS84
+
+municipalities_greece_long_names_eng <- read_xlsx("Shapefiles/municipalities_shape_file/names_municipalities_gr_eng.xlsx",col_names = T)
+municipalities_greece_long_names_eng$KWD_YPES <- as.character(municipalities_greece_long_names_eng$KWD_YPES)
+
+municipalities_shape_file@data <- municipalities_shape_file@data %>% left_join(., municipalities_greece_long_names_eng, by=c("KWD_YPES"="KWD_YPES"))
+rownames(municipalities_shape_file@data) <- as.character(seq(1:nrow(municipalities_shape_file@data)))
+
+
+
+over_municipality <- sp::over( x = Caves_Database_kml_to_txt_shapefile , y = municipalities_shape_file , fn = NULL)
+
+caves_in_municipa <- over_municipality
+
+caves_in_municipa$ID <- as.character(seq(1:nrow(caves_in_municipa)))
+
+caves_in_municipa2 <- caves_in_municipa %>% left_join(., Caves_Database_kml_to_txt, by=c("ID"="ID"))
+
+
+
+
+#' 
+#' 
+## ---- warning=FALSE, message=FALSE, echo=FALSE,eval=TRUE-----------------
+
+caves_municipality_join <- caves %>% dplyr::select(Cave_ID,Cave_Name,Municipality) %>% distinct() %>% group_by(Municipality) %>% summarise(number_of_caves=n()) %>% na.omit() %>% left_join(.,municipalities_greece_long_names_eng, by=c("Municipality"="Municipalities_ISO_843"),copy=TRUE) %>% left_join(.,municipalities_greece_long_names_eng, by=c("KWD_YPES"="KWD_YPES"),copy=TRUE) %>% dplyr::select(Municipalities_ISO_843,KWD_YPES,number_of_caves) %>% ungroup() %>% filter(!(KWD_YPES=="9170" & !is.na(KWD_YPES)))
+
+# Irakleio is 2 times but they are different municipalities. Irakleio Attikis has 9170 code so we removed it.
+
+species_Municipality <- census_all_species_all_caves %>% dplyr::select(Species,Municipality) %>% distinct() %>% group_by(Municipality) %>% summarise(number_of_species=n()) %>% na.omit()
+
+
+caves_species_municipality_join <-  caves_municipality_join %>% left_join(.,species_Municipality, by=c("Municipalities_ISO_843"="Municipality"))
+
+
+
+#' 
+#' 
+#' ## Protected areas of Greece
+#' 
+## ---- warning=FALSE, message=FALSE, echo=FALSE---------------------------
+## Function capitals to lower
+
+### caves with all protected areas
+capwords <- function(s, strict = FALSE) {
+    cap <- function(s) paste(toupper(substring(s, 1, 1)),
+                  {s <- substring(s, 2); if(strict) tolower(s) else s},
+                             sep = "", collapse = " " )
+    sapply(strsplit(s, split = " "), cap, USE.NAMES = !is.null(names(s)))
+}
+
+#' 
+#' 
+## ---- warning=FALSE, message=FALSE, echo=FALSE---------------------------
+
+# All new Natura
+
+natura2000_new_shapefile_v30  <- rgdal::readOGR("Shapefiles/GR_Natura2000_v30/gr_natura_v30.shp",verbose = T) #,p4s = "+proj=tmerc +lat_0=0 +lon_0=24 +k=0.9996 +x_0=500000 +y_0=0 +datum=GGRS87 +units=m +no_defs"
+#,p4s = "+proj=longlat +datum=WGS84 +ellps=GRS80 +units=m +no_defs"
+natura2000_new_shapefile_v30_wgs84 <- spTransform(natura2000_new_shapefile_v30, CRS("+proj=longlat +datum=WGS84")) #+proj=longlat +datum=GGRS87 +no_defs
+
+names_natura2000_new_shapefile_v30 <- natura2000_new_shapefile_v30@data %>% mutate(id=as.character(seq(from=0,to=(nrow(.)-1))))
+
+natura2000_new_shapefile_v30_dataframe <- tidy(natura2000_new_shapefile_v30_wgs84) %>% left_join(., names_natura2000_new_shapefile_v30, by=c("id"="id"))
+
+over_natura_NEW_v30 <- over( x = Caves_Database_kml_to_txt_shapefile_wgs84 , y = natura2000_new_shapefile_v30_wgs84 , returnList = T) # This is from rgeos, it contains multiple matches, thats why returnList=T. VERY Important
+
+over_natura_NEW_v30_d <-Caves_Database_kml_to_txt %>% left_join(bind_rows(over_natura_NEW_v30,.id = "ID"),by=c("ID"="ID"))
+
+## Only the new parts
+natura2000_NEW_shapefile <- maptools::readShapePoly("Shapefiles/Natura2000_2017_NEW_shp/Kaloust/Nees_Natura", verbose = TRUE)
+
+natura2000_NEW_shapefile_INFO <- maptools::readShapePoly("Shapefiles/Natura2000_2017_NEW_shp/NEES_FINAL_V10", verbose = TRUE)
+
+natura2000_NEW_shapefile_INFO_df <- natura2000_NEW_shapefile_INFO@data %>% mutate(id=as.character(seq(from=0,to=(nrow(.)-1))))
+
+natura2000_NEW_shapefile@data <-  natura2000_NEW_shapefile@data %>% mutate(id=as.character(seq(from=0,to=(nrow(.)-1)))) %>% left_join(natura2000_NEW_shapefile_INFO_df, by=c("id"="id")) %>% dplyr::select(-c(descriptio,timestamp,begin,end,altitudeMo,tessellate,extrude,visibility,drawOrder,icon))
+
+proj4string(natura2000_NEW_shapefile) <- CRS("+proj=longlat +datum=WGS84")# CRS("+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs") # this is WGS84
+
+
+# shapefiles to dataframes for plotting
+## New Natura
+natura2000_NEW_shapefile_names <- natura2000_NEW_shapefile@data %>% mutate(id=as.character(seq(from=0,to=(nrow(.)-1))))
+
+natura2000_NEW_shapefile_dataframe <- tidy(natura2000_NEW_shapefile) %>% left_join(., natura2000_NEW_shapefile_names, by=c("id"="id"))
+
+##### Natura 2000
+natura2000shapefile <- maptools::readShapePoly("Shapefiles/natura2000shapefile/natura2000shapefile",verbose=TRUE)
+
+proj4string(natura2000shapefile) <- CRS("+proj=longlat +datum=WGS84") #CRS("+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs")  # this is WGS84
+
+natura2000shapefile_data <- natura2000shapefile@data %>% dplyr::select(CODE,NAME_LATIN)
+### Katafygia agrias zois
+#katafygia_agrias_zwhs <- maptools::readShapePoly("katafygia_agrias_zwhs/katafygia_agrias_zwhs",verbose=TRUE)
+
+#proj4string(katafygia_agrias_zwhs) <- CRS("+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs")  # this is WGS84
+
+### Natura 2000 TIDY
+names_natura2000shapefile <- natura2000shapefile@data %>% mutate(id=as.character(seq(from=0,to=(nrow(.)-1)))) %>% mutate(NAME_LATIN_lower_letters=capwords(tolower(NAME_LATIN))) %>% mutate(SITETYPE_NATURA=ifelse(is.na(SITETYPE), NA_character_, ifelse(SITETYPE=="SPA","Special Protection Area", ifelse(SITETYPE=="SCI","Special Area of Conservation ", "Special Protection Area - Special Area of Conservation"))))
+
+natura2000shapefile_dataframe <- tidy(natura2000shapefile) %>% left_join(., names_natura2000shapefile, by=c("id"="id"))
+
+
+####
+katafygia_agrias_zwhs <- maptools::readShapePoly("Shapefiles/KAZ_data/KAZ_data",verbose=TRUE)
+
+proj4string(katafygia_agrias_zwhs) <- CRS("+proj=longlat +datum=WGS84")# CRS("+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs")  # this is WGS84
+
+
+
+#ssss <- katafygia_agrias_zwhs@data
+
+KAZ_data_translated <- read_xlsx("Shapefiles/KAZ_data/KAZ_table_translated.xlsx",col_names = T)
+
+KAZ_data_KODE <- read_csv("Shapefiles/KAZ_data/KAZ_data.csv",col_names = T) %>% dplyr::select(-the_geom) %>% left_join(KAZ_data_translated, by=c("KODE"="KODE"))
+
+### katafygia_agrias_zwhs TIDY
+#katafygia_agrias_zwhs_names$id <- as.character(seq(from=0,to=(nrow(katafygia_agrias_zwhs_names)-1)))
+
+katafygia_agrias_zwhs_dataframe <- tidy(katafygia_agrias_zwhs)
+#%>% left_join(., katafygia_agrias_zwhs_names, by=c("id"="id"))
+
+
+### New Natura Over
+over_NEW_natura <- sp::over( x = Caves_Database_kml_to_txt_shapefile_wgs84, y = natura2000_NEW_shapefile , fn = NULL)
+
+caves_in_over_NEW_natura <- over_NEW_natura %>% mutate(ID=as.character(seq(1:nrow(over_NEW_natura)))) %>% filter(SITE_TYPE=="SCI") %>% mutate(TYPE=gsub(pattern = "TROP",replacement = "Modified:",x =TYPE),Name_New_NATURA2=gsub(pattern = "TROP ",replacement = "",x = Name)) %>% left_join(Caves_Database_kml_to_txt,by=c("ID"="ID")) %>% dplyr::select(Cave_ID,TYPE,SITE_TYPE,Name_New_NATURA2) %>% left_join(natura2000shapefile_data, by=c("Name_New_NATURA2"="CODE")) %>% dplyr::select(-c(Name_New_NATURA2))
+
+colnames(caves_in_over_NEW_natura) <- c("Cave_ID","CODE_NEW_NATURA","SITETYPE_NEW_NATURA", "NAME_LATIN_NEW_NATURA")
+
+### over NATURA
+
+over_natura <- sp::over( x = Caves_Database_kml_to_txt_shapefile_wgs84 , y = natura2000shapefile , fn = NULL)
+
+# create file with the old and new natura2000 areas combined
+
+caves_in_over_natura <- over_natura %>% mutate(ID=as.character(seq(1:nrow(over_natura)))) %>% left_join(Caves_Database_kml_to_txt,by=c("ID"="ID")) %>% dplyr::select(Cave_ID,CODE,SITETYPE,NAME_LATIN)
+
+colnames(caves_in_over_natura) <- c("Cave_ID","CODE_NATURA","SITETYPE_NATURA", "NAME_LATIN_NATURA")
+
+### over Katafygia agrias zwis
+
+over_katafygia_agrias_zwhs <- sp::over( x = Caves_Database_kml_to_txt_shapefile_wgs84 , y = katafygia_agrias_zwhs , fn = NULL)
+
+over_katafygia_agrias_zwhs$ID_cave <- as.character(seq(1:nrow(over_katafygia_agrias_zwhs)))
+
+over_katafygia_agrias_zwhs_info <- over_katafygia_agrias_zwhs %>% dplyr::select(KODE,ID_cave) %>% left_join(KAZ_data_KODE, by=c("KODE"="KODE"))
+
+caves_in_over_katafygia_agrias_zwhs <- Caves_Database_kml_to_txt %>% left_join(over_katafygia_agrias_zwhs_info,by=c("ID"="ID_cave")) %>% dplyr::select(Cave_ID,KODE,KAZ_NAME_GR,KAZ_Official_Government_Gazette)
+
+
+
+caves_protection <- caves %>% dplyr::select(Cave_ID) %>% left_join(.,caves_in_over_natura, by=c("Cave_ID"="Cave_ID")) %>% left_join(.,caves_in_over_NEW_natura, by=c("Cave_ID"="Cave_ID")) %>%
+  left_join(.,over_natura_NEW_v30_d, by=c("Cave_ID"="Cave_ID")) %>% left_join(., caves_in_over_katafygia_agrias_zwhs, by=c("Cave_ID"="Cave_ID")) %>% mutate(NAME_LATIN_NATURA=gsub("NANA",NA_character_,gsub(" Kai "," and ",capwords(tolower(NAME_LATIN_NATURA))))) %>% mutate(NAME_LATIN_NEW_NATURA=gsub("NANA",NA_character_,gsub(" Kai "," and ",capwords(tolower(NAME_LATIN_NEW_NATURA))))) %>% mutate(SITETYPE_NATURA_ALL=ifelse(is.na(SITETYPE_NATURA), NA_character_, ifelse(SITETYPE_NATURA=="SPA","Special Protection Area", ifelse(SITETYPE_NATURA=="SCI","Special Area of Conservation", "Special Protection Area - Special Area of Conservation"))),SITETYPE_NEW_NATURA_ALL=ifelse(is.na(SITETYPE_NEW_NATURA), NA_character_, ifelse(SITETYPE_NEW_NATURA=="SPA","Special Protection Area", ifelse(SITETYPE_NEW_NATURA=="SCI","Special Area of Conservation", "Special Protection Area - Special Area of Conservation"))))
+
+## some names in () had lower case first letters so i changed them manually.
+#write_delim(caves_protection,path = "caves_protection.txt",delim = "\t",col_names = T)
+
+
+
+#' 
+#' 
+## ---- warning=FALSE, message=FALSE, echo=FALSE---------------------------
+#### JOIN FILES ##########
+
+caves_all_shapefiles <- caves_in_municipa2 %>% dplyr::select(-Cave_Name,-Longitude,-Latitude)%>% left_join(.,caves_protection, by=c("Cave_ID"="Cave_ID"))
+
+# Caves Ready!!!
+
+caves_all_info <- caves %>% left_join(.,caves_all_shapefiles, by=c("Cave_ID"="Cave_ID")) %>% left_join(.,over_natura_NEW_v30_d, by=c("Cave_ID"="Cave_ID"))
+
+
+
+#' 
+#' ## New Natura2000 v30
+#' 
+## ---- warning=FALSE, message=FALSE, echo=FALSE,eval=T--------------------
+
+
+# Which are different
+
+caves_protection <- strsplit(x = caves$Protection_Status,split = "|",fixed=TRUE)
+
+caves_protection_data <- data_frame(Caves_Protection=unlist(caves_protection),CaveName=rep.int(caves$Cave_Name,times = sapply(caves_protection,length)),Cave_ID=rep.int(caves$Cave_ID,times = sapply(caves_protection,length)),Region=rep.int(caves$Region,times = sapply(caves_protection,length)),Altitude=rep.int(caves$Altitude,times = sapply(caves_protection,length))) %>% mutate(Protection_Type=if_else(is.na(Caves_Protection),"Not protected", if_else(grepl("^G.",x = Caves_Protection),"Natura2000","Wildlife Refuge"))) %>% mutate(Caves_Protection_Code=gsub(" - .*","",Caves_Protection))
+
+caves_protection_data_natura <- caves_protection_data %>% filter(Protection_Type=="Natura2000") %>% left_join(names_natura2000shapefile, by=c("Caves_Protection_Code"="CODE")) %>% dplyr::select(Cave_ID,Region,Caves_Protection_Code,Caves_Protection, NAME_LATIN_lower_letters,SITETYPE_NATURA) %>% mutate(Law= gsub(".*Law *(.*?) *<a.*","Law \\1",Caves_Protection),Link=paste0(' <a href="http://natura2000.eea.europa.eu/Natura2000/SDF.aspx?site=',Caves_Protection_Code,'" target="_blank"> Check site’s Standard Data Form</a>'))
+
+caves_in_over_NEW_natura_v30 <- over_natura_NEW_v30_d %>% dplyr::select(-c(Cave_Name,Latitude,Longitude,ID),SITECODE_v30=SITECODE) %>% left_join(Caves_Database_kml_to_txt,by=c("Cave_ID"="Cave_ID")) %>% left_join(caves_protection_data_natura, by=c("Cave_ID"="Cave_ID")) %>% mutate(SITECODE_v30=trimws(SITECODE_v30,which = "both"))# %>% mutate(CODE_NEW_NATURA=gsub(pattern = "Modified: ",replacement = "",x=CODE_NEW_NATURA))
+
+natura_v30_vs_natura <- caves_in_over_NEW_natura_v30 %>% distinct(Cave_ID,Cave_Name,Region,SITECODE_v30,Caves_Protection_Code) %>% distinct() %>% mutate(SITECODE_v30=trimws(SITECODE_v30,which = "both"),Caves_Protection_Code=trimws(Caves_Protection_Code,which = "both")) %>% filter(SITECODE_v30!=Caves_Protection_Code)
+
+natura_v30_vs_natura_codes <- natura_v30_vs_natura %>% distinct(SITECODE,Caves_Protection_Code)
+
+
+#new_natura_codes <- natura_v30_vs_natura[which(!(natura_v30_vs_natura$SITECODE_v30 %in% caves_protection_data_natura$Caves_Protection_Code)),][,2] %>% distinct(.) %>% left_join(names_natura2000shapefile, by=c("SITECODE_v30"="CODE")) %>% mutate(Law="Law 3937/2011 (OGG/Α 60/31.03.2011), Joint Ministerial Decision 50743/2017 (OGG 4432/B/15.12.17).",Link=paste0(' <a href="http://natura2000.eea.europa.eu/Natura2000/SDF.aspx?site=',SITECODE_v30,'" target="_blank"> Check site’s Standard Data Form</a>')) %>% mutate(Site_Description=paste0(SITECODE_v30," - ",NAME_LATIN_lower_letters," (",SITETYPE_NATURA,"): ",Law," ",Link))
+
+
+#' 
+## ------------------------------------------------------------------------
+
+kable(table(over_natura_NEW_v30_d$SITETYPE),col.names = c("Natura2000 Site type","Caves"),caption = "Natura2000 v30 and caves")
+
+#' 
+#' 
+#' # Geospatial data visualisation
+#' 
+## ---- warning=FALSE, message=FALSE, echo=FALSE---------------------------
+
+
+
+ggplot()+
+  geom_freqpoly(data = caves, aes(x=Altitude),binwidth = 100,show.legend = F)+
+  #geom_freqpoly(data = species_per_altitude, aes(x=Altitude),binwidth = 100,show.legend = T)+
+  scale_y_continuous(breaks = seq(0,100,25),limits = c(0,100))+
+  scale_x_continuous(breaks = seq(0,2200,200),limits = c(0,2200))+
+  ggtitle("Caves in different altitude with 100m bins")+
+  labs(x="Altitude", y= "Number of caves")+
+  theme_bw()+
+  theme(panel.grid.minor = element_blank(), panel.grid.major = element_blank())
+
+ggsave("caves_per_altitude.png", plot = last_plot(), device = "png",width = 20,height = 20,units = "cm",dpi = 300 ,path = "Plots/")
+
+
+#' 
+#' 
+#' ## Species and caves per region
+#' 
+## ----eval=TRUE, cache=TRUE,warning=FALSE, message=FALSE, echo=FALSE------
+greece_level_2_shape <-getData('GADM', country='GRC', level=2)  ##Get the Province Shapefile for France
+
+greece_level_2 <- spTransform(greece_level_2_shape, CRS("+proj=longlat +datum=WGS84"))
+
+
+#' 
+## ----warning=FALSE, message=FALSE, echo=FALSE----------------------------
+greece_regions <- c("Athos","East Macedonia and Thrace","Attica ","West Greece","West Macedonia","Ionian Islands ","Epirus ","Central Macedonia","Crete","South Aegean","Peloponnese ","Central Greece ","Thessaly","North Aegean")
+
+caves_Region <- caves %>% dplyr::select(Cave_ID, Region) %>% distinct() %>% group_by(Region) %>% summarize(number_of_caves=n()) %>% na.omit() %>% mutate(color_manual=colorRampPalette(c("orangered2","palegreen3","skyblue1","slateblue1","pink2","sienna3"),space="Lab")( 14 ))
+
+caves_Region$regions <- greece_regions
+
+species_Region <- census_all_species_all_caves %>% dplyr::select(Species,Region) %>% distinct() %>% group_by(Region) %>% summarise(number_of_species=n()) %>% na.omit()
+
+species_Region$regions <- greece_regions
+
+
+#' 
+## ----warning=FALSE, message=FALSE, echo=FALSE----------------------------
+# Transform to dataframe
+# https://www.r-bloggers.com/using-r-working-with-geospatial-data-and-ggplot2/
+
+greece_level_2@data$id <- rownames(greece_level_2@data)
+
+greece_level_2 <- spTransform(greece_level_2, CRS("+proj=longlat +datum=WGS84"))
+
+
+greece_level_2_fortify <- fortify(greece_level_2, region = "id")
+
+greece_level_2_dataframe <- merge(greece_level_2_fortify, greece_level_2@data, by = "id")
+
+greece_level_2_dataframe <- greece_level_2_dataframe %>% left_join(., caves_Region, by=c("NAME_2"="regions")) %>% dplyr::select(-Region) %>% left_join(., species_Region, by=c("NAME_2"="regions"))
+
+cnames <- aggregate(cbind(long, lat) ~ NAME_2, data=greece_level_2_dataframe, FUN=function(x)mean(range(x))) %>% left_join(., caves_Region, by=c("NAME_2"="regions"))
+
+cnames_species <- aggregate(cbind(long, lat) ~ NAME_2, data=greece_level_2_dataframe, FUN=function(x)mean(range(x))) %>% left_join(., species_Region, by=c("NAME_2"="regions"))
+
+
+#' 
+#' 
+#' Caves distribution across all regions in Greece.
+#' 
+## ---- warning=FALSE, message=FALSE, echo=FALSE, eval=TRUE,cache=TRUE-----
+
+
+gg_region_caves <- ggplot(data = greece_level_2_dataframe,aes(x=long, y=lat)) +
+  geom_polygon(data = greece_level_2_dataframe,aes(x=long, y=lat,group = group,fill = number_of_caves),color="white",lwd=0.2) +
+  #geom_path(size= 0.2,color = "white") +
+  #coord_equal() +
+  #geom_text(data=cnames,aes(label = number_of_caves, x = long, y = lat)) + 
+  scale_fill_gradient(low="blue", high="red",breaks=seq(0,200,50), limits=c(0,200),name="Caves")+
+  scale_x_continuous(breaks = seq(18,30,1),limits = c(18,30))+
+  scale_y_continuous(breaks = seq(35,42,1),limits = c(34.5,42))+
+  coord_map(xlim = c(19,30.1), ylim = c(34.5,42))+
+  theme_bw()+
+  theme(legend.position = c(0.85, 0.80),panel.border = element_blank(),panel.grid.minor = element_blank(), panel.grid.major = element_blank(),axis.title = element_blank(), axis.text = element_blank(),axis.ticks = element_blank())
+
+ggsave("caves_spatial_dist_per_region_no_text.png", plot = gg_region_caves, device = "png",width = 30,height = 30,units = "cm",dpi = 300 ,path = "Plots/")
+
+
+#' 
+#' ![Samplings from caves in Greece.](Plots/caves_spatial_dist_per_region_no_text.png)
+#' 
+#' 
+#' Regions with caves coordinates.
+#' 
+## ---- warning=FALSE, message=FALSE, echo=FALSE---------------------------
+
+gg_region_caves_color <- ggplot() +
+  geom_polygon(data = greece_level_2_dataframe,aes(x=long, y=lat,group = group,fill = color_manual),color="white",lwd=0.2,show.legend = F, alpha=0.5) +
+  #geom_path(size= 0.2,color = "white") +
+  #coord_equal() +
+  #geom_text(data=caves,aes(x=Longitude, y=Latitude,label = Cave_ID)) + 
+  geom_point(data = caves,aes(x=Longitude, y=Latitude,color=Cave_Type),size = 3)+
+  scale_color_manual(name="Cave Types", values = c("Natural"="red","Artificial"="black", "Natural Modified"= "orange"))+
+  #scale_fill_manual(values = caves_Region$color_manual)+
+  scale_x_continuous(breaks = seq(18,30,1),limits = c(18,30))+
+  scale_y_continuous(breaks = seq(35,42,1),limits = c(34.5,42))+
+  coord_map(xlim = c(19,30.1), ylim = c(34.5,42))+
+  theme_bw()+
+  theme(panel.border = element_rect(colour = "black", fill=NA, size=0.8),panel.grid.minor = element_blank(), panel.grid.major = element_blank(),axis.title = element_blank(), axis.text = element_text(size = 18))
+
+ggsave("caves_in_region_no_text_color.png", plot = gg_region_caves_color, device = "png",width = 28,height = 28,units = "in",dpi = 100 ,path = "Plots/")
+
+
+#' 
+#' ![Regions with caves coordinates in Greece.](Plots/caves_in_region_no_text_color.png)
+#' 
+#' Species distribution across all regions in Greece.
+#' 
+## ---- warning=FALSE, message=FALSE, echo=FALSE, eval=TRUE,cache=TRUE-----
+
+gg_region_species <- ggplot(data = greece_level_2_dataframe,aes(x=long, y=lat)) +
+  geom_polygon(data = greece_level_2_dataframe,aes(x=long, y=lat,group = group,fill = number_of_species),color="white",lwd=0.2) +
+  #geom_path(size= 0.2,color = "white") +
+  #coord_equal() +
+  #geom_text(data=cnames_species,aes(label = number_of_species, x = long, y = lat)) + 
+  scale_fill_gradient(low="grey", high="red",breaks=seq(0,300,50), limits=c(0,300),name="Species")+
+  scale_x_continuous(breaks = seq(18,30,1),limits = c(18,30))+
+  scale_y_continuous(breaks = seq(35,42,1),limits = c(34.5,42))+
+  coord_map(xlim = c(19,30.1), ylim = c(34.5,42))+
+  theme_bw()+
+  theme(legend.position = c(0.85, 0.85),panel.border = element_blank(),panel.grid.minor = element_blank(), panel.grid.major = element_blank(),axis.title = element_blank(), axis.text = element_blank(),axis.ticks = element_blank())
+
+ggsave("species_spatial_dist_per_region_no_text.png", plot = gg_region_species, device = "png",width = 30,height = 30,units = "cm",dpi = 300 ,path = "Plots/")
+
+
+#' 
+#' ![Cave fauna distribution in Greece.](Plots/species_spatial_dist_per_region_no_text.png)
+#' 
+#' ## Species and caves distribution across Greek municipalities
+#' 
+#' 
+## ----warning=FALSE, message=FALSE, echo=FALSE,eval=TRUE------------------
+# Transform to dataframe
+# https://www.r-bloggers.com/using-r-working-with-geospatial-data-and-ggplot2/
+
+municipalities_shape_file_dataframe <- tidy(municipalities_shape_file)
+
+municipalities_greece_long_names_eng$id <- as.character(seq(from=0, to=(nrow(municipalities_greece_long_names_eng)-1)))
+
+watershedDF_muni <- municipalities_shape_file_dataframe %>% left_join(., municipalities_greece_long_names_eng, by=c("id"="id")) %>% left_join(., caves_species_municipality_join, by=("Municipalities_ISO_843"="Municipalities_ISO_843"))
+
+cnames <- aggregate(cbind(long, lat) ~ Municipalities_ISO_843, data=watershedDF_muni, FUN=function(x)mean(range(x))) %>% left_join(., caves_species_municipality_join, by=c("Municipalities_ISO_843"="Municipalities_ISO_843"))
+
+cnames_species <- aggregate(cbind(long, lat) ~ Municipalities_ISO_843, data=watershedDF_muni, FUN=function(x)mean(range(x))) %>% left_join(., caves_species_municipality_join, by=c("Municipalities_ISO_843"="Municipalities_ISO_843"))
+
+watershedDF_muni$number_of_caves[is.na(watershedDF_muni$number_of_caves)] <- 0
+watershedDF_muni$number_of_species[is.na(watershedDF_muni$number_of_species)] <- 0
+
+
+#' 
+#' 
+## ---- warning=FALSE, message=FALSE, echo=FALSE, eval=TRUE,cache=TRUE-----
+
+gg_municipalities_caves <- ggplot() +
+  geom_polygon(data = watershedDF_muni,aes(x=long, y=lat,group = group,fill = number_of_caves),color="white",lwd=0.08) +
+  #geom_path(size= 0.2,color = "white") +
+  #coord_equal() +
+  #geom_text(data=cnames,aes(label = number_of_caves, x = long, y = lat)) + 
+  scale_fill_gradient(low="blue", high="red",breaks=seq(0,20,5), limits=c(0,20),name="Caves")+
+  scale_x_continuous(breaks = seq(18,30,1),limits = c(18,30))+
+  scale_y_continuous(breaks = seq(35,42,1),limits = c(34.5,42))+
+  coord_map(xlim = c(19,30.1), ylim = c(34.5,42))+
+  theme_bw()+
+  theme(legend.position = c(0.85, 0.85),panel.border = element_blank(),panel.grid.minor = element_blank(), panel.grid.major = element_blank(),axis.title = element_blank(), axis.text = element_blank(),axis.ticks = element_blank())
+
+ggsave("caves_spatial_dist_per_municipality_no_text.png", plot = gg_municipalities_caves, device = "png",width = 30,height = 30,units = "cm",dpi = 300 ,path = "Plots/")
+
+
+
+#' 
+#' ![Caves that have been sampled in Greece](Plots/caves_spatial_dist_per_municipality_no_text.png)
+#' 
+## ---- warning=FALSE, message=FALSE, echo=FALSE, eval=TRUE,cache=TRUE-----
+
+gg_municipalities_species <- ggplot() +
+  geom_polygon(data = watershedDF_muni,aes(x=long, y=lat,group = group,fill = number_of_species),color="white",lwd=0.082) +
+  #geom_path(size= 0.2,color = "white") +
+  #coord_equal() +
+  #geom_text(data=cnames,aes(label = number_of_caves, x = long, y = lat)) + 
+  scale_fill_gradient(low="grey", high="red",breaks=seq(0,80,20), limits=c(0,80),name="Species")+
+  scale_x_continuous(breaks = seq(18,30,1),limits = c(18,30))+
+  scale_y_continuous(breaks = seq(35,42,1),limits = c(34.5,42))+
+  coord_map(xlim = c(19,30.1), ylim = c(34.5,42))+
+  theme_bw()+
+  theme(legend.position = c(0.85, 0.85),panel.border = element_blank(),panel.grid.minor = element_blank(), panel.grid.major =element_blank(),axis.title = element_blank(), axis.text = element_blank(),axis.ticks = element_blank())
+
+ggsave("species_spatial_dist_per_municipality_no_text.png", plot = gg_municipalities_species, device = "png",width = 30,height = 30,units = "cm",dpi = 300 ,path = "Plots/")
+
+
+
+#' 
+#' ![Species sampled per municipality in Greece](Plots/species_spatial_dist_per_municipality_no_text.png)
+#' 
+#' ## Greece caves and protected areas
+#' 
+## ---- warning=FALSE, message=FALSE, echo=FALSE---------------------------
+
+caves_in_SCI <- over_natura_NEW_v30_d %>% dplyr::filter(SITETYPE=="SCI") %>% nrow()
+caves_in_SPA <- over_natura_NEW_v30_d %>% dplyr::filter(SITETYPE=="SPA") %>% nrow()
+caves_in_SCISPA <- over_natura_NEW_v30_d %>% dplyr::filter(SITETYPE=="SCISPA") %>% nrow()
+caves_in_KAZ <- caves_all_info %>% dplyr::filter(!is.na(KODE))%>% nrow()
+
+caves_in_areas <- data.frame(Areas=c("NATURA2000 SCI","NATURA2000 SPA", "NATURA2000 SPASCI", "Wildlife Refuge"), Caves=c(caves_in_SCI,caves_in_SPA,caves_in_SCISPA,caves_in_KAZ))
+
+caves_in_areas_caption <- "Number of caves per protected area type"
+kable(caves_in_areas,caption=caves_in_areas_caption, align = 'l')
+
+
+#' 
+## ------------------------------------------------------------------------
+
+caves_protection_data %>% group_by(Protection_Type) %>% summarise(number_of_caves=n()) %>%
+ggplot(.)+
+  geom_col(aes(x=Protection_Type, y= number_of_caves, fill=Protection_Type),show.legend = F)+
+  geom_text(aes(x =Protection_Type,y= number_of_caves, label=number_of_caves), position=position_dodge(width=0.7), vjust=-0.25,size=2.8)+
+  scale_y_continuous(breaks = seq(0,300,25),limits = c(0,300))+
+  ggtitle("Caves in Greece that are protected")+
+  labs(x="Protection", y= "Number of caves")+
+  theme_bw()+
+  theme(panel.grid.minor = element_blank(), panel.grid.major = element_blank(),axis.text.x = element_text(angle = 45, hjust = 1))
+
+ggsave("caves_protection_data_greece.jpeg", plot = last_plot(), device = "jpeg", dpi = 300,path = "Plots/")
+
+
+#' 
+#' 
+#' With google earth background.
+#' 
+## ---- warning=FALSE, message=FALSE, echo=FALSE---------------------------
+## load greek borders
+
+hellenic_borders_shapefile <- maptools::readShapeLines("Shapefiles/hellenic_borders/hellenic_borders",verbose=TRUE)
+
+proj4string(hellenic_borders_shapefile) <- CRS("+proj=longlat +datum=WGS84") #CRS("+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs")  # this is WGS84
+
+hellenic_borders_shapefile_dataframe <- tidy(hellenic_borders_shapefile)
+bbox_hellenic_borders <- hellenic_borders_shapefile@bbox
+bbox_hellenic_borders_lat <- bbox_hellenic_borders
+
+
+
+
+
+#' 
+#' 
+## ---- warning=FALSE, message=FALSE, echo=FALSE, eval=FALSE,cache=TRUE----
+## # plot map
+## 
+## ## get map
+## map_greece <- get_map(location = c(lon=mean(bbox_hellenic_borders[1,]), lat=mean(bbox_hellenic_borders[2,])),zoom = 6,maptype = "terrain")
+## 
+## map_greece_plot <- ggmap(map_greece)+
+##   geom_polygon(data = natura2000shapefile_dataframe,aes(x=long, y=lat,group = group,fill="Natura2000"),lwd=0.082, alpha=0.6)+
+##   geom_polygon(data = katafygia_agrias_zwhs_dataframe,aes(x=long, y=lat,group = group,fill="Wildlife Refuge"),lwd=0.082,alpha=0.8)+
+##   geom_point(data = caves,aes(x=Longitude, y=Latitude,color="Caves"),size = 0.2)+
+##   labs(x="Longitude",y="Latitude")+
+##   scale_fill_manual(values = c("Natura2000"="chartreuse3","Wildlife Refuge"="chocolate2"),name="Protected areas")+
+##   scale_color_manual(name="", values = c("Caves"="red"))+
+##   scale_x_continuous(breaks = seq(20,30,2),limits = c(20,30))+
+##   scale_y_continuous(breaks = seq(35,42,2),limits = c(34.5,42))+
+##   coord_map(xlim = c(19,30.1), ylim = c(34.5,42))+
+##   theme_bw()
+## #geom_text(data = sisquoc, aes(label = paste("  ", as.character(name), sep="")), angle = 60, hjust = 0, color = "yellow")
+## 
+## ggsave("map_greece_plot_protected_areas.png", plot = map_greece_plot, device = "png",width = 30,height = 30,units = "cm",dpi = 300 ,path = "Plots/")
+
+#' 
+#' Only with borders.
+#' 
+## ---- warning=FALSE, message=FALSE, echo=FALSE, eval=TRUE----------------
+
+map_greece_plot_lines <- ggplot()+
+  geom_polygon(data = hellenic_borders_shapefile_dataframe,aes(x=long, y=lat,group = group),lwd=0.12,color="black")+
+  geom_polygon(data = natura2000_new_shapefile_v30_dataframe,aes(x=long, y=lat,group = group,fill=SITETYPE),lwd=0.082, alpha=0.6)+
+  geom_polygon(data = katafygia_agrias_zwhs_dataframe,aes(x=long, y=lat,group = group,fill="Wildlife Refuge"),lwd=0.082,alpha=0.8)+
+  geom_point(data = caves,aes(x=Longitude, y=Latitude,color="Caves"),size = 0.2)+
+  #geom_text(data = caves,aes(x=Longitude, y=Latitude,label=Cave_ID))+
+  labs(x="Longitude",y="Latitude")+
+  scale_fill_manual(values = c("chartreuse3","purple","cyan3","chocolate2"),labels = c("Natura2000 v30 SCI", "Natura2000 v30 SPA", "Natura2000 v30 SCISPA","Wildlife Refuge"),name="Protected areas")+
+  scale_color_manual(name="", values = c("Caves"="red"))+
+  scale_x_continuous(breaks = seq(18,30,1),limits = c(18,30))+
+  scale_y_continuous(breaks = seq(35,42,1),limits = c(34.5,42))+
+  coord_map(xlim = c(19,30.1), ylim = c(34.5,42))+
+  theme_bw()+
+  theme(panel.grid.minor = element_blank(), panel.grid.major = element_blank(),legend.position = c(0.87, 0.73),legend.text = element_text(size=9),legend.title = element_text(size=10))
+#geom_text(data = sisquoc, aes(label = paste("  ", as.character(name), sep="")), angle = 60, hjust = 0, color = "yellow")
+    
+ggsave("map_greece_plot_lines.png", plot = map_greece_plot_lines, device = "png",width = 30,height = 30,units = "cm",dpi = 300 ,path = "Plots/")
+
+
+
+#' 
+#' ![Caves and protected areas in Greece (only borders)](Plots/map_greece_plot_lines.png)
+#' 
+#' 
+#' Compare Natura2000
+#' 
+## ---- warning=FALSE, message=FALSE, echo=FALSE, eval=FALSE---------------
+## 
+## comparison_Natura2000 <- ggplot()+
+##   geom_polygon(data = natura2000_NEW_shapefile_dataframe,aes(x=long, y=lat,group = group,fill=SITE_TYPE),lwd=0.082, alpha=0.6)+
+##   geom_polygon(data = hellenic_borders_shapefile_dataframe,aes(x=long, y=lat,group = group),lwd=0.12,color="black")+
+##   geom_polygon(data = natura2000shapefile_dataframe,aes(x=long, y=lat,group = group,fill=SITETYPE),lwd=0.082, alpha=0.6)+
+##   geom_polygon(data = natura2000_new_shapefile_v30_dataframe,aes(x=long, y=lat,group = group,fill="Natura2000 v30"),lwd=0.082,alpha=0.8)+
+##   geom_point(data = caves,aes(x=Longitude, y=Latitude,color="Caves"),size = 0.2)+
+##   #geom_text(data = caves,aes(x=Longitude, y=Latitude,label=Cave_ID))+
+##   labs(x="Longitude",y="Latitude")+
+##   #scale_fill_manual(values = c("chartreuse3","purple","cyan3","chocolate2"),labels = c("Natura2000 SCI", "Natura2000 SPA", "Natura2000 SPASCI","Natura2000 v30"),name="Protected areas")+
+##   #scale_fill_manual(values = c("SCI"="chartreuse3","SPA"="purple","SPASCI"="cyan3", "Wildlife Refuge"="chocolate2"),labels = c("Natura2000 SCI", "Natura2000 SPA", "Natura2000 SPASCI","Wildlife Refuge")name="Protected areas")+
+##   scale_color_manual(name="", values = c("Caves"="red"))+
+##   scale_x_continuous(breaks = seq(18,30,1),limits = c(18,30))+
+##   scale_y_continuous(breaks = seq(35,42,1),limits = c(34.5,42))+
+##   coord_map(xlim = c(19,30.1), ylim = c(34.5,42))+
+##   theme_bw()+
+##   theme(panel.grid.minor = element_blank(), panel.grid.major = element_blank(),legend.position = c(0.87, 0.73),legend.text = element_text(size=9),legend.title = element_text(size=10))
+## #geom_text(data = sisquoc, aes(label = paste("  ", as.character(name), sep="")), angle = 60, hjust = 0, color = "yellow")
+## 
+## ggsave("comparison_Natura2000.png", plot = comparison_Natura2000, device = "png",path = "Plots/")
+## 
+## 
+
+#' 
+#' 
+#' ## Grids
+#' 
+## ---- warning=FALSE, message=FALSE, echo=FALSE---------------------------
+## https://gis.stackexchange.com/questions/124295/convert-coordinates-from-readshapepoly-in-r-to-long-lat-coordinates ## sotireeees
+
+grid_100k_shapefile <- readOGR("Shapefiles/EEA_reference_grid_1_10_50_and_100_kmgr/GR_100k.shp",verbose=TRUE)
+
+
+grid_100k_shapefile_wgs84 <- spTransform(grid_100k_shapefile, CRS("+proj=longlat +datum=WGS84"))
+grid_100k_shapefile_dataframe <- tidy(grid_100k_shapefile_wgs84)
+
+grid_10k_shapefile <- readOGR("Shapefiles/EEA_reference_grid_1_10_50_and_100_kmgr/GR_10k.shp",verbose=TRUE)
+
+
+grid_10k_shapefile_wgs84 <- spTransform(grid_10k_shapefile, CRS("+proj=longlat +datum=WGS84"))
+grid_10k_shapefile_dataframe <- tidy(grid_10k_shapefile_wgs84)
+
+
+grid_10k_shapefile_wgs84_data <- grid_10k_shapefile_wgs84@data %>% mutate(id=as.character(seq(from=0, to=(nrow(grid_10k_shapefile_wgs84@data)-1)))) %>% left_join(grid_10k_shapefile_dataframe,by=c("id"="id")) %>% dplyr::select(-c(EofOrigin,NofOrigin))
+
+dim(grid_10k_shapefile_wgs84@data)
+length(unique(grid_10k_shapefile_dataframe$id))
+ 
+
+#grid_1k_shapefile <- readOGR("EEA_reference_grid_1_10_50_and_100_kmgr/GR_1k.shp",verbose=TRUE)
+
+
+#grid_1k_shapefile_wgs84 <- spTransform(grid_1k_shapefile, CRS("+proj=longlat +datum=WGS84"))
+#grid_1k_shapefile_dataframe <- tidy(grid_1k_shapefile_wgs84)
+
+ 
+
+#' 
+## ---- warning=FALSE, message=FALSE, echo=FALSE---------------------------
+
+# caves over polygon
+Caves_Database_kml_to_txt_shapefile_wgs84 <- spTransform(Caves_Database_kml_to_txt_shapefile, CRS("+proj=longlat +datum=WGS84"))
+
+
+### over grid
+
+over_grid_10k <- sp::over( x = Caves_Database_kml_to_txt_shapefile_wgs84 , y = grid_10k_shapefile_wgs84 , fn = NULL)
+
+
+
+# 
+#grid_10k_shapefile_dataframe
+
+caves_in_over_grid_10k <- over_grid_10k %>% mutate(ID=as.character(seq(1:nrow(over_grid_10k)))) %>% left_join(Caves_Database_kml_to_txt,by=c("ID"="ID"))
+
+#%>% 
+grid_10k_caves <- grid_10k_shapefile_wgs84_data %>% left_join(caves_in_over_grid_10k,by=c("CellCode"="CellCode"))
+
+# cave Abundance 
+caves_in_over_grid_10k_abundance <- caves_in_over_grid_10k %>% group_by(CellCode) %>% summarise(number_of_caves=n())
+
+grid_10k_caves_abundance <- grid_10k_shapefile_wgs84_data %>% left_join(caves_in_over_grid_10k_abundance,by=c("CellCode"="CellCode")) %>% mutate(number_of_caves=if_else(is.na(number_of_caves),0,as.numeric(number_of_caves)))
+
+# species abundance
+
+species_per_cave <- census_all_species %>% filter(species_epithet!="sp.") %>% distinct(Species,Classification,Cave_Name,Cave_ID)
+
+caves_in_over_grid_10k_species <- caves_in_over_grid_10k %>% left_join(species_per_cave,by=c("Cave_ID"="Cave_ID")) %>% distinct(CellCode,Species) %>% group_by(CellCode) %>% summarise(number_of_species=n())
+
+grid_10k_species_abundance <- grid_10k_caves_abundance %>% left_join(caves_in_over_grid_10k_species,by=c("CellCode"="CellCode")) %>% mutate(number_of_species=if_else(is.na(number_of_species),0,as.numeric(number_of_species)))
+
+# Species classification
+
+caves_in_over_grid_10k_species_classification <- caves_in_over_grid_10k %>% left_join(species_per_cave,by=c("Cave_ID"="Cave_ID")) %>% distinct(CellCode,Species,Classification) %>% group_by(CellCode,Classification) %>% summarise(number_of_species=n())
+
+grid_10k_species_abundance_classification <- grid_10k_caves_abundance %>% left_join(caves_in_over_grid_10k_species_classification,by=c("CellCode"="CellCode")) %>% mutate(number_of_species=if_else(is.na(number_of_species),0,as.numeric(number_of_species))) %>% filter(!is.na(Classification))
+
+# endemic species abundance
+
+endemic_species_per_cave <- census_all_species %>% filter(species_epithet!="sp.", Distribution=="Endemic to Greece") %>% distinct(Species,Classification,Cave_Name,Cave_ID,Distribution)
+
+caves_in_over_grid_10k_endemic_species <- caves_in_over_grid_10k %>% left_join(endemic_species_per_cave,by=c("Cave_ID"="Cave_ID")) %>% distinct(CellCode,Species) %>% group_by(CellCode) %>% summarise(number_of_species=n())
+
+grid_10k_endemic_species_abundance <- grid_10k_caves_abundance %>% left_join(caves_in_over_grid_10k_endemic_species,by=c("CellCode"="CellCode")) %>% mutate(number_of_species=if_else(is.na(number_of_species),0,as.numeric(number_of_species)))
+
+
+
+#' 
+#' 
+#' 
+## ---- warning=FALSE, message=FALSE, echo=FALSE, eval=FALSE,cache=TRUE----
+## # Caves
+## 
+## ggplot()+
+##   geom_polygon(data = grid_10k_caves_abundance,aes(x=long, y=lat,group = group,fill=number_of_caves),lwd=0.082, alpha=0.6)+
+##   #geom_polygon(data = grid_100k_shapefile_dataframe,aes(x=long, y=lat,group = group),lwd=0.082, alpha=0.6)+
+##   geom_polygon(data = hellenic_borders_shapefile_dataframe,aes(x=long, y=lat,group = group),lwd=0.12,color="black")+
+##   # geom_polygon(data = natura2000shapefile_dataframe,aes(x=long, y=lat,group = group,fill=SITETYPE),lwd=0.082, alpha=0.6)+
+##   #geom_polygon(data = katafygia_agrias_zwhs_dataframe,aes(x=long, y=lat,group = group,fill="Wildlife Refuge"),lwd=0.082,alpha=0.8)+
+##   geom_point(data = caves,aes(x=Longitude, y=Latitude,color="Caves"),size = 0.2)+
+##   labs(x="Longitude",y="Latitude")+
+##   #scale_fill_manual(values = c("chartreuse3","purple","cyan3","chocolate2"),labels = c("Natura2000 SCI", "Natura2000 SPA", "Natura2000 SPASCI","Wildlife Refuge"),name="Protected areas")+
+##   #scale_fill_manual(values = c("SCI"="chartreuse3","SPA"="purple","SPASCI"="cyan3", "Wildlife Refuge"="chocolate2"),labels = c("Natura2000 SCI", "Natura2000 SPA", "Natura2000 SPASCI","Wildlife Refuge")name="Protected areas")+
+##   scale_color_manual(name="", values = c("Caves"="red"))+
+##   scale_fill_gradient(low="white", high="slateblue3",breaks=seq(0,15,3), limits=c(0,15),name="Caves")+
+##   scale_x_continuous(breaks = seq(18,30,1),limits = c(18,30))+
+##   scale_y_continuous(breaks = seq(35,42,1),limits = c(34.5,42))+
+##   coord_map(xlim = c(19,30.1), ylim = c(34.5,42))+
+##   theme_bw()+
+##   theme(panel.grid.minor = element_blank(), panel.grid.major = element_blank(),legend.position = c(0.87, 0.75),legend.text = element_text(size=9),legend.title = element_text(size=10),axis.text =element_text(size = 10))
+## #geom_text(data = sisquoc, aes(label = paste("  ", as.character(name), sep="")), angle = 60, hjust = 0, color = "yellow")
+## 
+##  ggsave("map_greece_plot_lines_grid_caves.png", plot = last_plot(),device = "png",width = 30,height = 30,units = "cm",dpi = 300 ,path = "Plots/")
+## 
+
+#' 
+#' 
+## ---- warning=FALSE, message=FALSE, echo=FALSE---------------------------
+# species
+
+grid_10k_species_abundance_plot <- ggplot()+
+  geom_polygon(data = grid_10k_species_abundance,aes(x=long, y=lat,group = group,fill=number_of_species),lwd=0.082, alpha=0.83)+
+  scale_fill_gradientn(colours = c("gray100","gray50","gray40","gray35","gray30","gray20","gray10","gray0"),name="Number of species")+
+  #geom_polygon(data = grid_100k_shapefile_dataframe,aes(x=long, y=lat,group = group),lwd=0.082, alpha=0.6)+
+  #geom_polygon(data = hellenic_borders_shapefile_dataframe,aes(x=long, y=lat,group = group),lwd=0.04,color="black")+
+  #geom_polygon(data = natura2000shapefile_dataframe,aes(x=long, y=lat,group = group,fill=SITETYPE),lwd=0.082, alpha=0.6)+
+  #geom_polygon(data = katafygia_agrias_zwhs_dataframe,aes(x=long, y=lat,group = group,fill="Wildlife Refuge"),lwd=0.082,alpha=0.8)+
+  geom_polygon(data = greece_level_2_dataframe,aes(x=long, y=lat,group = group),fill=greece_level_2_dataframe$color_manual, color="white",lwd=0.2,show.legend = F, alpha=0.35)+
+  geom_point(data = caves,aes(x=Longitude, y=Latitude,color=Cave_Type),size = 1.3)+
+  labs(x="Longitude",y="Latitude")+
+  ggtitle("Species richness")+
+  #scale_fill_manual(values = c("chartreuse3","purple","cyan3","chocolate2"),labels = c("Natura2000 SCI", "Natura2000 SPA", "Natura2000 SPASCI","Wildlife Refuge"),name="Protected areas")+
+  #scale_fill_manual(values = c("SCI"="chartreuse3","SPA"="purple","SPASCI"="cyan3", "Wildlife Refuge"="chocolate2"),labels = c("Natura2000 SCI", "Natura2000 SPA", "Natura2000 SPASCI","Wildlife Refuge")name="Protected areas")+
+  scale_color_manual(name="Cave Types", values = c("Natural"="red","Artificial"="black", "Natural Modified"= "orange"))+  
+  #scale_fill_manual(values = unique(greece_level_2_dataframe$color_manual))+
+  scale_x_continuous(breaks = seq(18,30,1),limits = c(18,30))+
+  scale_y_continuous(breaks = seq(35,42,1),limits = c(34.5,42))+
+  coord_map(xlim = c(19,30.1), ylim = c(34.5,42))+
+  theme_bw()+
+  guides(colour = guide_legend(order = 1), 
+              fill = guide_legend(order = 2))+
+  theme(panel.grid.minor = element_blank(), panel.grid.major = element_blank(),legend.position = c(0.145, 0.15),legend.text = element_text(size=16,hjust = 0.5),legend.title = element_text(size=18,hjust = 0.5),axis.text=element_text(size = 16),plot.title = element_text(size=22),axis.title = element_text(size = 18),legend.title.align = 0.5,legend.box = "vertical")
+  #guides(colour=guide_legend(override.aes=list(fill=unique(greece_level_2_dataframe$color_manual))))
+#geom_text(data = sisquoc, aes(label = paste("  ", as.character(name), sep="")), angle = 60, hjust = 0, color = "yellow")
+
+ggsave("map_greece_plot_lines_grid_species.png", plot = grid_10k_species_abundance_plot, device = "png",width = 30,height = 30,units = "cm",dpi = 300 ,path = "Plots/")
+ 
+# gg_region_caves_color <- ggplot() +
+#   geom_polygon(data = greece_level_2_dataframe,aes(x=long, y=lat,group = group,fill = Region),color="white",lwd=0.2,show.legend = F, alpha=0.8) +
+#   #geom_path(size= 0.2,color = "white") +
+#   #coord_equal() +
+#   #geom_text(data=caves,aes(x=Longitude, y=Latitude,label = Cave_ID)) + 
+#   geom_point(data = caves,aes(x=Longitude, y=Latitude,color=Cave_Type),size = 3,show.legend = F)+
+#   scale_color_manual(name="", values = c("black","red"))+
+#   scale_fill_manual(values = caves_Region$color_manual)+
+#   scale_x_continuous(breaks = seq(18,30,1),limits = c(18,30))+
+#   scale_y_continuous(breaks = seq(35,42,1),limits = c(34.5,42))+
+#   coord_map(xlim = c(19,30.1), ylim = c(34.5,42))+
+#   theme_bw()+
+#   theme(panel.border = element_rect(colour = "black", fill=NA, size=0.8),panel.grid.minor = element_blank(), panel.grid.major = element_blank(),axis.title = element_blank())
+# 
+# ggsave("caves_in_region_no_text_color.png", plot = gg_region_caves_color, device = "png",width = 28,height = 28,units = "in",dpi = 100 ,path = "Plots/")
+
+#' 
+#' ![Species abundance in Greece](Plots/map_greece_plot_lines_grid_species.png)
+#' 
+## ---- warning=FALSE, message=FALSE, echo=FALSE---------------------------
+# species endemic species richness
+
+ggplot()+
+  geom_polygon(data = grid_10k_endemic_species_abundance,aes(x=long, y=lat,group = group,fill=number_of_species),lwd=0.082, alpha=0.6)+
+  geom_polygon(data = hellenic_borders_shapefile_dataframe,aes(x=long, y=lat,group = group),lwd=0.12,color="black")+
+  geom_point(data = caves,aes(x=Longitude, y=Latitude,color="Caves"),size = 0.2)+
+  labs(x="Longitude",y="Latitude")+
+  ggtitle("Endemic species richness")+
+  scale_color_manual(name="", values = c("Caves"="red"))+
+  scale_fill_gradientn(colours = c("gray100",terrain.colors(10)),na.value = "grey50" ,name="Number of species")+ #c("gray100","gray50","gray40","gray35","gray30","gray20","gray10","gray0")
+  scale_x_continuous(breaks = seq(18,30,1),limits = c(18,30))+
+  scale_y_continuous(breaks = seq(35,42,1),limits = c(34.5,42))+
+  coord_map(xlim = c(19,30.1), ylim = c(34.5,42))+
+  theme_bw()+
+  theme(panel.grid.minor = element_blank(), panel.grid.major = element_blank(),legend.position = c(0.87, 0.75),legend.text = element_text(size=13),legend.title = element_text(size=14),axis.text=element_text(size = 16),plot.title = element_text(size=22),axis.title = element_text(size = 18))
+
+ 
+ ggsave("map_greece_plot_lines_grid_endemic_species.png", plot = last_plot(), device = "png",width = 30,height = 30,units = "cm",dpi = 300 ,path = "Plots/")
+
+
+#' 
+#' ![Endemic species abundance in Greece](Plots/map_greece_plot_lines_grid_endemic_species.png)
+#' 
+#' 
+#' 
+## ---- warning=FALSE, message=FALSE, echo=FALSE, eval=TRUE----------------
+# species classification
+
+ggplot()+
+  geom_polygon(data = grid_10k_species_abundance_classification,aes(x=long, y=lat,group = group,fill=number_of_species),lwd=0.082, alpha=0.6)+
+  geom_polygon(data = hellenic_borders_shapefile_dataframe,aes(x=long, y=lat,group = group),lwd=0.12,color="black")+
+  #geom_point(data = caves,aes(x=Longitude, y=Latitude,color="Caves"),size = 0.2)+
+  labs(x="Longitude",y="Latitude")+
+  #scale_color_manual(name="", values = c("Caves"="red"))+
+   scale_fill_gradientn(colours = rev(rainbow(9)),
+                         breaks = c(0, 5, 10, 15, 20, 25,30))+
+  coord_map(xlim = c(19,30.1), ylim = c(34.5,42))+
+  theme_bw()+
+  theme(panel.grid.minor = element_blank(), panel.grid.major = element_blank(),legend.text = element_text(size=9),legend.title = element_text(size=10)) +
+  facet_wrap(~ Classification, ncol=3)
+
+ 
+ ggsave("map_greece_plot_lines_grid_species_classification.png", plot = last_plot(), device = "png",width = 30,height = 30,units = "cm",dpi = 300 ,path = "Plots/")
+
+
+#' 
+#' ![Species abundance in Greece in respect to their classification](Plots/map_greece_plot_lines_grid_species_classification.png)
+#' 
+#' 
+#' 
+#' ## Underground systems
+#' 
+#' 
+## ---- warning=FALSE, message=FALSE, echo=FALSE---------------------------
+
+YPOGEIA_YDATIKA_SYSTIMATA <- rgdal::readOGR("Shapefiles/YPOGEIA_YDATIKA_SYSTIMATA/GR_GWB_50K_GREECE.shp")
+
+YPOGEIA_YDATIKA_SYSTIMATA_wgs84 <- spTransform(YPOGEIA_YDATIKA_SYSTIMATA, CRS("+proj=longlat +datum=WGS84"))
+
+YPOGEIA_YDATIKA_SYSTIMATA_wgs84_data <- tidy(YPOGEIA_YDATIKA_SYSTIMATA_wgs84)
+
+
+
+
+#' 
+#' 
+## ---- warning=FALSE, message=FALSE, echo=FALSE, eval=FALSE,cache=TRUE----
+## ggplot()+
+##   geom_polygon(data = YPOGEIA_YDATIKA_SYSTIMATA_wgs84_data,aes(x=long, y=lat,group = group,fill="orange"),color="white",lwd=0.082, alpha=0.6)+
+##   #geom_polygon(data = grid_100k_shapefile_dataframe,aes(x=long, y=lat,group = group),lwd=0.082, alpha=0.6)+
+##   geom_polygon(data = hellenic_borders_shapefile_dataframe,aes(x=long, y=lat,group = group),lwd=0.12,color="black")+
+##   #geom_polygon(data = natura2000shapefile_dataframe,aes(x=long, y=lat,group = group,fill=SITETYPE),lwd=0.082, alpha=0.6)+
+##   #geom_polygon(data = katafygia_agrias_zwhs_dataframe,aes(x=long, y=lat,group = group,fill="Wildlife Refuge"),lwd=0.082,alpha=0.8)+
+##   geom_point(data = caves,aes(x=Longitude, y=Latitude,color="Caves"),size = 0.2)+
+##   labs(x="Longitude",y="Latitude")+
+##   #scale_fill_manual(values = c("chartreuse3","purple","cyan3","chocolate2"),labels = c("Natura2000 SCI", "Natura2000 SPA", "Natura2000 SPASCI","Wildlife Refuge"),name="Protected areas")+
+##  # scale_fill_manual(values = c("SCI"="chartreuse3","SPA"="purple","SPASCI"="cyan3", "Wildlife Refuge"="chocolate2"),labels = c("Natura2000 SCI", "Natura2000 SPA", "Natura2000 SPASCI","Wildlife Refuge"),name="Protected areas")+
+##   scale_color_manual(name="", values = c("Caves"="red"))+
+##   #scale_fill_gradient(low="white", high="red",breaks=seq(0,70,10), limits=c(0,70),name="Species")+
+##   #scale_x_continuous(breaks = seq(20,30,1),limits = c(20,30))+
+##   #scale_y_continuous(breaks = seq(35,42,1),limits = c(34.5,42))+
+##   coord_map(xlim = c(19,30.1), ylim = c(34.5,42))+
+##   theme_bw()+
+##   theme(panel.grid.minor = element_blank(), panel.grid.major = element_blank(),legend.position = c(0.87, 0.75),legend.text = element_text(size=9),legend.title = element_text(size=10))
+## 
+##  ggsave("YPOGEIA_YDATIKA_SYSTIMATA.png", plot = last_plot(), device = "png",width = 30,height = 30,units = "cm",dpi = 300 ,path = "Plots/")
+## 
+
+#' 
+#' 
+#' 
+#' 
+## ---- warning=FALSE, message=FALSE, echo=FALSE,eval=F--------------------
+## # Geopark psiloritis
+## 
+## geopark_borders <- readOGR("Shapefiles/geopark_borders_mod/geopark_borders_mod.shp",verbose = T)
+## 
+## geopark_borders <- spTransform(x = geopark_borders,CRSobj = "+proj=longlat +datum=WGS84 +ellps=WGS84 +towgs84=0,0,0")
+## 
+## over_geopark_borders <- over( x = Caves_Database_kml_to_txt_shapefile_wgs84 , y = geopark_borders , returnList = T) # This is from rgeos, it contains multiple matches, thats why returnList=T. VERY Important
+## 
+## caves_over_geopark_borders_d <-Caves_Database_kml_to_txt %>% left_join(bind_rows(over_geopark_borders,.id = "ID"),by=c("ID"="ID")) %>% filter(!is.na(Name))
+## 
+## geopark_census <- census_all_species_all_caves %>% filter(species_epithet!="sp.") %>% filter(Cave_ID %in% caves_over_geopark_borders_d$Cave_ID)
+## 
+## #write_delim(geopark_census,path = "/Users/savasp/Dropbox (INSPEE)/INSPEE Team Folder/Conservation of the cave fauna of Greece - MAVA/Cave_Fauna_database/Cave_Fauna_Database_Analysis/geopark_census.tsv",delim = "\t",col_names = T)
+## 
+## geopark_species <- geopark_census %>% distinct(Species,Order,Class,Classification,Locus_Typicus_Cave,Locus_Typicus_Cave_ID)
+## 
+## geopark_caves <- length(unique(geopark_census$Cave_ID))
+## 
+## geopark_greek_endemics <- geopark_census %>% filter(Distribution=="Endemic to Greece") %>% distinct(Species)
+## 
+## endemic_to_crete <- census_all_species_all_caves %>% filter(species_epithet!="sp.") %>% filter(Distribution=="Endemic to Greece") %>% distinct( Species,Region) %>% group_by(Species) %>% mutate(number_of_regions=n()) %>% filter(number_of_regions==1 & Region=="Kriti")
+## 
+## endemic_to_geopark_psiloritis <- census_all_species_all_caves %>% filter(species_epithet!="sp.") %>% filter(Distribution=="Endemic to Greece") %>% left_join(caves_over_geopark_borders_d,by=c("Cave_ID"="Cave_ID")) %>% distinct(Species,Cave_ID,Cave_Name,Name)
+## 
+## geopark_crete_endemics <- geopark_census %>% filter(Species %in% endemic_to_crete$Species) %>% filter(Distribution=="Endemic to Greece") %>% distinct( Species,Region) %>% group_by(Species) %>% mutate(number_of_regions=n()) %>% filter(number_of_regions==1 & Region=="Kriti")
+## 
+## caves_number_tr <- geopark_census %>% filter(Classification=="Troglobiont") %>% group_by(Cave_ID,Cave_Name) %>% summarise(number_of_species=n())
+## 
+## species_number_tr <- geopark_census %>% filter(Classification=="Troglobiont") %>% dplyr::select(Species,Cave_ID,Cave_Name)  %>% group_by(Species) %>% mutate(number_of_caves=n())
+## 
+## write_delim(x = species_number_tr,path = "species_number_tr_troglobionts.tsv",delim = "\t",col_names = T)
+## 
+
+#' 
+#' # References
