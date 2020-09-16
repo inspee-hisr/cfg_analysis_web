@@ -8,5 +8,5 @@ Gemfile.lock
 .Rproj.user
 
 Data/
-
+*.icloud
 Shapefiles/
