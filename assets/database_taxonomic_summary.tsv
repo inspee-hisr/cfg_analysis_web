@@ -25,8 +25,8 @@ Callipodida	 	1	5	13
 Glomerida	 	2	2	6
 Julida	 	2	13	17
 Polydesmida	 	2	5	7
-Entognatha	3	7	15	28
-Diplura	 	2	5	17
+Entognatha	3	7	16	29
+Diplura	 	2	6	18
 Entomobryomorpha	 	1	1	1
 Poduromorpha	 	4	9	10
 Hexanauplia	2	4	17	33
@@ -70,11 +70,10 @@ Carnivora	 	2	3	3
 Chiroptera	 	3	10	28
 Rodentia	 	1	2	2
 Phylum Annelida	 	 	 	 
-Clitellata	4	5	14	18
+Clitellata	3	4	13	17
 Branchiobdellida	 	1	1	1
 Crassiclitellata	 	2	9	13
 Enchytraeida	 	1	3	3
-Haplotaxida	 	1	1	1
 Phylum Nematoda	 	 	 	 
 Enoplea	3	7	9	9
 Dorylaimida	 	4	4	4
@@ -91,4 +90,4 @@ Gastropoda	2	15	32	65
 Littorinimorpha	 	2	2	2
 Stylommatophora	 	13	30	63
  	 	 	 	 
-TOTAL	65	194	439	873
+TOTAL	64	193	439	873

@@ -133,7 +133,7 @@ census_long_man <- data_frame(ReferenceShort=unlist(census_long_str_man),referen
 
 # IUCN Assessment
 
-```{r, child='CFG_IUCN_Assessment.Rmd'}
+```{r, child='CFG_data_enrichment.Rmd'}
 
 ```
 
