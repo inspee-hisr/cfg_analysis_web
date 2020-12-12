@@ -207,44 +207,44 @@ ggsave("species_class_barplot.png", plot = species_class_barplot, device = "png"
 ## ------------------------------------------------------------------------
 species_na_order <- species %>% filter(is.na(Order))
 
-species_taxonomy_table <- species %>% dplyr::select(Species_Full_Name,Genus,Family,Order,Class,Phylum) %>% group_by(Genus,Family,Order,Class,Phylum) %>% summarise(Species=n()) %>% group_by(Family,Order,Class,Phylum) %>% summarise(Genera=n(),Species=sum(Species)) %>% group_by(Order,Class,Phylum) %>% summarise(Families=n(),Genera=sum(Genera),Species=sum(Species)) %>% group_by(Class,Phylum) %>% mutate(Orders=n()) %>% ungroup()
+endemic_species_taxonomy_table <- species %>% filter(Distribution=="Endemic to Greece") %>% dplyr::select(Species_Full_Name,Genus,Family,Order,Class,Phylum) %>% group_by(Genus,Family,Order,Class,Phylum) %>% summarise(Endemic_species=n()) %>% group_by(Family,Order,Class,Phylum) %>% summarise(Genera=n(),Endemic_species=sum(Endemic_species)) %>% group_by(Order,Class,Phylum) %>% summarise(Families=n(),Genera=sum(Genera),Endemic_species=sum(Endemic_species)) %>% group_by(Class,Phylum) %>% mutate(Orders=n()) %>% ungroup()
 
+endemic_species_orders <- endemic_species_taxonomy_table %>% distinct(Order,Endemic_species)
 
+species_taxonomy_table <- species %>% dplyr::select(Species_Full_Name,Genus,Family,Order,Class,Phylum,Distribution) %>% group_by(Genus,Family,Order,Class,Phylum) %>% summarise(Species=n()) %>% group_by(Family,Order,Class,Phylum) %>% summarise(Genera=n(),Species=sum(Species)) %>% group_by(Order,Class,Phylum) %>% summarise(Families=n(),Genera=sum(Genera),Species=sum(Species)) %>% group_by(Class,Phylum) %>% mutate(Orders=n()) %>% ungroup() %>% left_join(endemic_species_orders, by=c("Order"="Order"))
 
 #' 
 ## ------------------------------------------------------------------------
 
 # Create Taxonomic Summary Table for The Database Statistics
 
-database_taxonomic_summary <- as_tibble(matrix(ncol = 5))
-colnames(database_taxonomic_summary)<- c("TAXA","Orders","Families","Genera","Species")
+database_taxonomic_summary <- as_tibble(matrix(ncol = 6))
+colnames(database_taxonomic_summary)<- c("TAXA","Orders","Families","Genera","Species","Endemic_species")
 phyla <- unique(species_taxonomy_table$Phylum)
 
 for(i in 1:length(phyla)) {
   
-  phylum <- as_tibble(matrix(c(paste0("Phylum ",phyla[i]),NA,NA,NA,NA),ncol = 5))
-  colnames(phylum)<- c("TAXA","Orders","Families","Genera","Species")
+  phylum <- as_tibble(matrix(c(paste0("Phylum ",phyla[i]),NA,NA,NA,NA,NA),ncol = 6))
+  colnames(phylum)<- c("TAXA","Orders","Families","Genera","Species","Endemic_species")
   
   database_taxonomic_summary <- rbind(database_taxonomic_summary,phylum)
+ 
+  class <- species_taxonomy_table %>% filter(Phylum==phyla[i]) %>% group_by(Class,Orders) %>% summarise(Families=sum(Families),Genera=sum(Genera),Species=sum(Species),Endemic_species=sum(Endemic_species,na.rm=T)) %>% dplyr::rename(TAXA=Class) %>% ungroup()
   
-  class <- species_taxonomy_table %>% filter(Phylum==phyla[i]) %>%
-    group_by(Class,Orders) %>%   summarise(Families=sum(Families),Genera=sum(Genera),Species=sum(Species)) %>% dplyr::rename(TAXA=Class) %>% ungroup()
-  
-  for(j  in 1:nrow(class)) {
+  for(j in 1:nrow(class)) {
 
     database_taxonomic_summary <- rbind(database_taxonomic_summary,class[j,])
     
-    orders <- species_taxonomy_table %>% filter(Class==as.character(class[j,1])) %>% dplyr::select(Order,Orders,Families,Genera,Species) %>% dplyr::rename(TAXA=Order) %>% mutate(Orders=NA) %>% ungroup()
+    orders <- species_taxonomy_table %>% filter(Class==as.character(class[j,1])) %>% dplyr::select(Order,Orders,Families,Genera,Species,Endemic_species) %>% dplyr::rename(TAXA=Order) %>% mutate(Orders=NA) %>% ungroup()
       
     database_taxonomic_summary <- rbind(database_taxonomic_summary,orders)
-
   }
 
 }
 
 # Create summary, totals
-TOTAL <- as_tibble(matrix(c(NA,NA,NA,NA,NA,"TOTAL",length(unique(species$Order)),length(unique(species$Family)),length(unique(species$Genus)),length(unique(species$Species_Full_Name))),ncol = 5,nrow = 2,byrow = T))
-  colnames(TOTAL)<- c("TAXA","Orders","Families","Genera","Species")
+TOTAL <- as_tibble(matrix(c(NA,NA,NA,NA,NA,NA,"TOTAL",length(unique(species$Order)),length(unique(species$Family)),length(unique(species$Genus)),length(unique(species$Species_Full_Name)), length(grep("Endemic to Greece", species$Distribution))),ncol = 6,nrow = 2,byrow = T))
+  colnames(TOTAL)<- c("TAXA","Orders","Families","Genera","Species","Endemic_species")
 
 database_taxonomic_summary <- database_taxonomic_summary[-1,] %>% rbind(.,TOTAL)
 
@@ -254,7 +254,7 @@ database_taxonomic_summary[is.na(database_taxonomic_summary)] <- " " # replace N
 
 
 # HTML formatting and exporting
-database_taxonomic_summary %>% mutate(TAXA = cell_spec(TAXA, "html", bold = ifelse(grepl(pattern = "^Phylum",x = database_taxonomic_summary$TAXA), "TRUE", ifelse(database_taxonomic_summary$Orders!=" ", "TRUE", "FALSE")),underline = ifelse(grepl(pattern = "^Phylum",x = database_taxonomic_summary$TAXA), "TRUE", "FALSE"))) %>% kable(format = "html", escape = F) %>% kable_styling(bootstrap_options = c("hover","condensed"),font_size = 15) %>% cat(., file = "Website_plots/database_taxonomic_summary.html")
+database_taxonomic_summary %>% rename("Endemic species"=Endemic_species) %>% mutate(TAXA = cell_spec(TAXA, "html", bold = ifelse(grepl(pattern = "^Phylum",x = database_taxonomic_summary$TAXA), "TRUE", ifelse(database_taxonomic_summary$Orders!=" ", "TRUE", "FALSE")),underline = ifelse(grepl(pattern = "^Phylum",x = database_taxonomic_summary$TAXA), "TRUE", "FALSE"))) %>% kable(format = "html", escape = F) %>% kable_styling(bootstrap_options = c("hover","condensed"),font_size = 15) %>% cat(., file = "Website_plots/database_taxonomic_summary.html")
 
 # check the font type
 # import in Website: paste the html code in source code of the edit stats page, 
@@ -717,7 +717,7 @@ caves_protection_data_summary_type$Protection_Type_l <- factor(gsub(pattern = " 
 ggplot()+
   geom_col(data = caves_protection_data_summary_type, aes(x=Protection_Type_l, y= number_of_caves, fill=Protection_Type_l),width=0.8,show.legend = F)+
   geom_text(data = caves_protection_data_summary_type,aes(x =Protection_Type_l,y= number_of_caves, label=number_of_caves), position=position_dodge(width=0.7), vjust=-0.25,size=5)+
-  scale_y_continuous(breaks = seq(0,300,50),limits = c(0,300))+
+  scale_y_continuous(breaks = seq(0,350),limits = c(0,350))+
   #scale_x_discrete(labels=Protection_Type_label)+
   labs(x="Protection", y= "Number of caves")+
   theme_bw()+
