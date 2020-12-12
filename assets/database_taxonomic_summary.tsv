@@ -1,93 +1,93 @@
-TAXA	Orders	Families	Genera	Species
-Phylum Arthropoda	 	 	 	 
-Arachnida	12	57	120	262
-Amblypygi	 	1	1	1
-Araneae	 	26	71	146
-Ixodida	 	1	2	3
-Mesostigmata	 	2	4	4
-Opiliones	 	4	13	17
-Oribatida	 	3	3	3
-Palpigradi	 	1	1	3
-Prostigmata	 	1	1	2
-Pseudoscorpionida	 	7	11	61
-Sarcoptiformes	 	6	6	6
-Scorpiones	 	3	3	8
-Trombidiformes	 	2	4	8
-Branchiopoda	1	1	1	1
-Anomopoda	 	1	1	1
-Chilopoda	4	5	7	23
-Geophilomorpha	 	1	1	1
-Lithobiomorpha	 	1	3	16
-Scolopendromorpha	 	2	2	5
-Scutigeromorpha	 	1	1	1
-Diplopoda	4	7	25	43
-Callipodida	 	1	5	13
-Glomerida	 	2	2	6
-Julida	 	2	13	17
-Polydesmida	 	2	5	7
-Entognatha	3	7	16	29
-Diplura	 	2	6	18
-Entomobryomorpha	 	1	1	1
-Poduromorpha	 	4	9	10
-Hexanauplia	2	4	17	33
-Cyclopoida	 	1	8	16
-Harpacticoida	 	3	9	17
-Insecta	12	46	126	248
-Archaeognatha	 	1	3	3
-Blattodea	 	1	1	1
-Coleoptera	 	14	73	146
-Diptera	 	9	17	23
-Hemiptera	 	2	3	3
-Hymenoptera	 	1	1	1
-Lepidoptera	 	7	11	12
-Orthoptera	 	2	5	41
-Psocoptera	 	4	4	5
-Siphonaptera	 	1	1	1
-Trichoptera	 	2	5	10
-Zygentoma	 	2	2	2
-Malacostraca	4	23	40	92
-Amphipoda	 	4	6	9
-Decapoda	 	1	2	2
-Isopoda	 	17	31	80
-Thermosbaenacea	 	1	1	1
-Maxillopoda	1	1	1	1
-Calanoida	 	1	1	1
-Ostracoda	1	1	3	3
-Podocopida	 	1	3	3
-Symphyla	1	2	3	3
- 	 	2	3	3
-Phylum Chordata	 	 	 	 
-Actinopterygii	1	1	2	2
-Cypriniformes	 	1	2	2
-Amphibia	2	2	2	2
-Anura	 	1	1	1
-Caudata	 	1	1	1
-Aves	2	2	2	2
-Passeriformes	 	1	1	1
-Strigiformes	 	1	1	1
-Mammalia	3	6	15	33
-Carnivora	 	2	3	3
-Chiroptera	 	3	10	28
-Rodentia	 	1	2	2
-Phylum Annelida	 	 	 	 
-Clitellata	3	4	13	17
-Branchiobdellida	 	1	1	1
-Crassiclitellata	 	2	9	13
-Enchytraeida	 	1	3	3
-Phylum Nematoda	 	 	 	 
-Enoplea	3	7	9	9
-Dorylaimida	 	4	4	4
-Mononchida	 	1	3	3
-Triplonchida	 	2	2	2
-Secernentea	1	1	3	3
-Rhabditida	 	1	3	3
-Phylum Platyhelminthes	 	 	 	 
-Rhabditophora	2	2	2	2
-Lecithoepitheliata	 	1	1	1
-Tricladida	 	1	1	1
-Phylum Mollusca	 	 	 	 
-Gastropoda	2	15	32	65
-Littorinimorpha	 	2	2	2
-Stylommatophora	 	13	30	63
- 	 	 	 	 
-TOTAL	64	193	439	873
+TAXA	Orders	Families	Genera	Species	Endemic_species
+Phylum Arthropoda	 	 	 	 	 
+Arachnida	12	57	120	262	120
+Amblypygi	 	1	1	1	 
+Araneae	 	26	71	146	61
+Ixodida	 	1	2	3	 
+Mesostigmata	 	2	4	4	 
+Opiliones	 	4	13	17	5
+Oribatida	 	3	3	3	 
+Palpigradi	 	1	1	3	1
+Prostigmata	 	1	1	2	 
+Pseudoscorpionida	 	7	11	61	43
+Sarcoptiformes	 	6	6	6	3
+Scorpiones	 	3	3	8	4
+Trombidiformes	 	2	4	8	3
+Branchiopoda	1	1	1	1	0
+Anomopoda	 	1	1	1	 
+Chilopoda	4	5	7	22	8
+Geophilomorpha	 	1	1	1	 
+Lithobiomorpha	 	1	3	15	5
+Scolopendromorpha	 	2	2	5	3
+Scutigeromorpha	 	1	1	1	 
+Diplopoda	4	7	25	43	27
+Callipodida	 	1	5	13	8
+Glomerida	 	2	2	6	6
+Julida	 	2	13	17	7
+Polydesmida	 	2	5	7	6
+Entognatha	3	7	16	29	12
+Diplura	 	2	6	18	11
+Entomobryomorpha	 	1	1	1	 
+Poduromorpha	 	4	9	10	1
+Hexanauplia	2	4	17	33	4
+Cyclopoida	 	1	8	16	2
+Harpacticoida	 	3	9	17	2
+Insecta	12	46	126	249	124
+Archaeognatha	 	1	3	3	2
+Blattodea	 	1	1	1	 
+Coleoptera	 	14	73	146	80
+Diptera	 	9	17	23	 
+Hemiptera	 	2	3	3	 
+Hymenoptera	 	1	1	1	 
+Lepidoptera	 	7	11	12	1
+Orthoptera	 	2	5	42	38
+Psocoptera	 	4	4	5	2
+Siphonaptera	 	1	1	1	 
+Trichoptera	 	2	5	10	 
+Zygentoma	 	2	2	2	1
+Malacostraca	4	23	40	92	61
+Amphipoda	 	4	6	9	6
+Decapoda	 	1	2	2	 
+Isopoda	 	17	31	80	55
+Thermosbaenacea	 	1	1	1	 
+Maxillopoda	1	1	1	1	0
+Calanoida	 	1	1	1	 
+Ostracoda	1	1	3	3	1
+Podocopida	 	1	3	3	1
+Symphyla	1	2	3	3	0
+ 	 	2	3	3	 
+Phylum Chordata	 	 	 	 	 
+Actinopterygii	1	1	2	2	0
+Cypriniformes	 	1	2	2	 
+Amphibia	2	2	2	2	0
+Anura	 	1	1	1	 
+Caudata	 	1	1	1	 
+Aves	2	2	2	2	0
+Passeriformes	 	1	1	1	 
+Strigiformes	 	1	1	1	 
+Mammalia	3	6	15	33	0
+Carnivora	 	2	3	3	 
+Chiroptera	 	3	10	28	 
+Rodentia	 	1	2	2	 
+Phylum Annelida	 	 	 	 	 
+Clitellata	3	4	13	17	1
+Branchiobdellida	 	1	1	1	 
+Crassiclitellata	 	2	9	13	 
+Enchytraeida	 	1	3	3	1
+Phylum Nematoda	 	 	 	 	 
+Enoplea	3	7	9	9	0
+Dorylaimida	 	4	4	4	 
+Mononchida	 	1	3	3	 
+Triplonchida	 	2	2	2	 
+Secernentea	1	1	3	3	0
+Rhabditida	 	1	3	3	 
+Phylum Platyhelminthes	 	 	 	 	 
+Rhabditophora	2	2	2	2	0
+Lecithoepitheliata	 	1	1	1	 
+Tricladida	 	1	1	1	 
+Phylum Mollusca	 	 	 	 	 
+Gastropoda	2	15	32	65	40
+Littorinimorpha	 	2	2	2	2
+Stylommatophora	 	13	30	63	38
+ 	 	 	 	 	 
+TOTAL	64	193	439	873	398
