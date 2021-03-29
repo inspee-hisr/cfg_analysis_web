@@ -1,211 +1,52 @@
-#!/bin/usr/Rscript
-
-#' ---
-#' title: "Cave Fauna of Greece Database Analysis"
-#' author: "Hellenic Institute of Speleological Research"
-#' date: '`r Sys.Date()`'
-#' output:
-#'   html_document:
-#'     toc: yes
-#'     toc_depth: 2
-#'     toc_float: yes
-#'   pdf_document:
-#'     toc: yes
-#'     toc_depth: '2'
-#'   word_document:
-#'     toc: yes
-#'     toc_depth: '2'
-#' link-citations: yes
-#' bibliography: packages_used.bib
-#' site: bookdown::bookdown_site
-#' biblio-style: apalike
-#' ---
-#' 
-#' 
-## ---- warning=FALSE, message=FALSE, echo=FALSE---------------------------
-### Working Directory
-
-#setwd("C:/Users/inikoloudakis/Dropbox/INSPEE Team Folder/Conservation of the cave fauna of Greece - MAVA/Cave_Fauna_database/Cave_Fauna_Database_Analysis")
+#!/usr/bin/env Rscript
 
 # Data manipulation packages
-library(readxl)
-library(readr)
-library(ggplot2)
-library(scales)
 library(gridExtra)
 library(grid)
-library(reshape2)
-library(dplyr)
-library(knitr)
-library(tidyr)
-library(httr)
-library(broom)
-library(stringr)
-
-## Data for species
-
-library(rredlist)
-library(taxize)
-library(rgbif)
-library(ISOcodes)
-library(spocc)
-
-# Spatial analysis packages
-
-# x <- c("spocc","isocodes","rgbif","taxize","rredlist","raster","RColorBrewer","ggmap", "rgdal", "rgeos", "maptools", "tmap","Rcpp","sp")
-# #install.packages(x) # warning: uncommenting this may take a number of minutes
-# lapply(x, library, character.only = TRUE)
-library(RColorBrewer)
-library(ggmap)
-library(rgdal)
-library(geosphere)
-library(GISTools)
-library(leaflet)
-library(rgeos)
-library(maptools)
-library(tmap)
-library(Rcpp)
-library(sp)
-library(raster) ##Load the Raster Library
-
-# Species statistics
-
-library(red)
-library(vegan)
-
-packages <- c("readxl","readr","ggplot2","scales","gridExtra","dplyr", "knitr", "tidyr","RColorBrewer","ggmap","rgdal","rgeos","maptools","tmap","Rcpp","sp","raster","broom","red","vegan")
-
-write_bib(x = packages,file = "packages_used.bib")
-
-
-#' 
-#' 
-## ---- warning=FALSE, message=FALSE, echo=FALSE---------------------------
-# Store the file names of the Data folder
- 
- data_files <- list.files(path = "Data")
- 
- # Data import from Database Export, the files are choosen automatically based on their name. The folder Data must contain only the latest data files.
- Cave_References <- read_delim(file = paste0("Data/",grep("Cave_References",data_files,value = TRUE)),delim = "\t")
- 
- caves <- read_delim(file = paste0("Data/",grep("Caves",data_files,value = TRUE)),delim = "\t")
- 
- census <- read_delim(file = paste0("Data/",grep("Census_\\d",data_files,value = TRUE)),delim = "\t")
- 
- Census_references <- read_delim(file = paste0("Data/",grep("Census_references",data_files,value = TRUE)),delim = "\t")
- 
-species <- read_delim(file = paste0("Data/",grep("Species_",data_files,value = TRUE)),delim = "\t") %>% mutate(Classification=gsub(pattern="\\?",replacement = "",x = Classification))# Data import from Database Export
-
-
-#' 
-#' 
-## ---- warning=FALSE, message=FALSE, echo=FALSE---------------------------
-census$species_epithet <- as.character(lapply(strsplit(as.character(census$Species), split=" "), "[", n=2))
-
-census_all_species <- census %>% left_join(species,by=c("Species"="Species_Full_Name"))
-
-census_all_species_all_caves <- census_all_species %>% dplyr::select(-Cave_Name) %>% left_join(caves, by=c("Cave_ID"="Cave_ID"))
-
-census_long_str_man <- strsplit(x = census_all_species$Reference_Short,split = "|",fixed=TRUE)
-census_long_str_man_id <- strsplit(x = census_all_species$Reference_ID,split = "|",fixed=TRUE)
-
-census_long_man <- data_frame(ReferenceShort=unlist(census_long_str_man),reference_id=unlist(census_long_str_man_id),CaveName=rep.int(census_all_species$Cave_Name,times = sapply(census_long_str_man,length)),Cave_ID=rep.int(census_all_species$Cave_ID,times = sapply(census_long_str_man,length)),Census_id=rep.int(census_all_species$Census_ID,times = sapply(census_long_str_man,length)),Species=rep.int(census_all_species$Species,times = sapply(census_long_str_man,length))) %>% group_by(ReferenceShort,Cave_ID,CaveName,Species,Census_id) %>% summarise(n=n()) %>% ungroup() %>% mutate(Species=trimws(Species,"r"))
-
-
-#' 
-## ---- warning=FALSE, message=FALSE, echo=FALSE---------------------------
-# run all
- #source('CFG_Introduction.Rmd')
-
-
-#' 
-#' 
-#' 
-#' # Introduction
-#' 
-## ---- child='CFG_Introduction.Rmd'---------------------------------------
-
-#' 
-#' 
-## ---- warning=FALSE, message=FALSE, echo=FALSE---------------------------
-### Working Directory
-
-#setwd("C:/Users/inikoloudakis/Dropbox/INSPEE Team Folder/Conservation of the cave fauna of Greece - MAVA/Cave_Fauna_database/Cave_Fauna_Database_Analysis")
-
-# Data manipulation packages
-library(readxl)
-library(readr)
-library(ggplot2)
-library(scales)
-library(gridExtra)
-library(grid)
-library(reshape2)
-library(dplyr)
-library(knitr)
+library(tidyverse)
 library(kableExtra)
-library(tidyr)
-library(httr)
-library(broom)
-library(stringr)
-
 ## Data for species
 
 library(rredlist)
 library(taxize)
-library(rgbif)
-library(ISOcodes)
-library(spocc)
+#library(rgbif)
+#library(ISOcodes)
+#library(spocc)
 
 # Spatial analysis packages
 
-# x <- c("spocc","isocodes","rgbif","taxize","rredlist","raster","RColorBrewer","ggmap", "rgdal", "rgeos", "maptools", "tmap","Rcpp","sp")
-# #install.packages(x) # warning: uncommenting this may take a number of minutes
-# lapply(x, library, character.only = TRUE)
 library(RColorBrewer)
-library(ggmap)
+#library(ggmap)
 library(rgdal)
-library(geosphere)
-library(GISTools)
-library(leaflet)
-library(rgeos)
+#library(geosphere)
+#library(GISTools)
+#library(leaflet)
+#library(rgeos)
 library(maptools)
-library(tmap)
+#library(tmap)
 library(Rcpp)
 library(sp)
-library(raster) ##Load the Raster Library
+#library(raster) ##Load the Raster Library
 
 # Species statistics
 
-library(red)
-library(vegan)
+#library(red)
+#library(vegan)
 
-packages <- c("readxl","readr","ggplot2","scales","gridExtra","dplyr", "knitr", "tidyr","RColorBrewer","ggmap","rgdal","rgeos","maptools","tmap","Rcpp","sp","raster","broom","red","vegan")
-
-write_bib(x = packages,file = "packages_used.bib")
-
-
-#' 
-#' 
-## ---- warning=FALSE, message=FALSE, echo=FALSE---------------------------
-# Store the file names of the Data folder
+data_files <- list.files(path = "Data")
  
- data_files <- list.files(path = "Data")
+# Data import from Database Export, the files are choosen automatically based on their name. The folder Data must contain only the latest data files.
+Cave_References <- read_delim(file = paste0("Data/",grep("Cave_References",data_files,value = TRUE)),delim = "\t")
  
- # Data import from Database Export, the files are choosen automatically based on their name. The folder Data must contain only the latest data files.
- Cave_References <- read_delim(file = paste0("Data/",grep("Cave_References",data_files,value = TRUE)),delim = "\t")
+caves <- read_delim(file = paste0("Data/",grep("Caves",data_files,value = TRUE)),delim = "\t")
  
- caves <- read_delim(file = paste0("Data/",grep("Caves",data_files,value = TRUE)),delim = "\t")
+census <- read_delim(file = paste0("Data/",grep("Census_\\d",data_files,value = TRUE)),delim = "\t")
  
- census <- read_delim(file = paste0("Data/",grep("Census_\\d",data_files,value = TRUE)),delim = "\t")
- 
- Census_references <- read_delim(file = paste0("Data/",grep("Census_references",data_files,value = TRUE)),delim = "\t")
+Census_references <- read_delim(file = paste0("Data/",grep("Census_references",data_files,value = TRUE)),delim = "\t")
  
 species <- read_delim(file = paste0("Data/",grep("Species_",data_files,value = TRUE)),delim = "\t") %>% mutate(Classification=gsub(pattern="\\?",replacement = "",x = Classification))# Data import from Database Export
 
 
-#' 
-#' 
-## ---- warning=FALSE, message=FALSE, echo=FALSE---------------------------
 census$species_epithet <- as.character(lapply(strsplit(as.character(census$Species), split=" "), "[", n=2))
 
 census_all_species <- census %>% left_join(species,by=c("Species"="Species_Full_Name"))
@@ -217,24 +58,7 @@ census_long_str_man_id <- strsplit(x = census_all_species$Reference_ID,split = "
 
 census_long_man <- data_frame(ReferenceShort=unlist(census_long_str_man),reference_id=unlist(census_long_str_man_id),CaveName=rep.int(census_all_species$Cave_Name,times = sapply(census_long_str_man,length)),Cave_ID=rep.int(census_all_species$Cave_ID,times = sapply(census_long_str_man,length)),Census_id=rep.int(census_all_species$Census_ID,times = sapply(census_long_str_man,length)),Species=rep.int(census_all_species$Species,times = sapply(census_long_str_man,length))) %>% group_by(ReferenceShort,Cave_ID,CaveName,Species,Census_id) %>% summarise(n=n()) %>% ungroup() %>% mutate(Species=trimws(Species,"r"))
 
-
-#' 
-#' 
-#' 
-#' **General information**
-#' 
-#' Census has `r nrow(census)` records of species in caves.
-#' Species: `r length(unique(species$Species_Full_Name))`.
-#' Caves: `r length(unique(caves$Cave_ID))`.
-#' Census references: `r length(unique(Census_references$ID))`.
-#' Cave description references: `r length(unique(Cave_References$ID))`.
-#' 
-#' 
-#' 
-#' ## Regions
-#' 
-## ---- warning=FALSE, message=FALSE, echo=FALSE---------------------------
-#color <- with(X = runif(n = nrow(),min = 0,max = 1),hsv(h=,s = 3/4,v = 7/8,alpha = 1))
+## Regions
 
 caves_Region <- caves %>% dplyr::select(Cave_ID, Region) %>% distinct() %>% group_by(Region) %>% summarize(number_of_caves=n()) %>% na.omit() %>% mutate(color_manual=colorRampPalette(c("orangered2","palegreen3","skyblue1","slateblue1","pink2","sienna3"),space="Lab")( 14 ))
 
@@ -251,13 +75,7 @@ ggplot()+
 
 ggsave("caves_Region_barplot.jpeg", plot = last_plot(), device = "jpeg", dpi = 300,path = "Plots/")
 
-
-
-#' 
 #' Both species and caves per region.
-#' 
-## ---- warning=FALSE, message=FALSE, echo=FALSE---------------------------
-
 species_region_endemic <- census_all_species_all_caves %>% filter(species_epithet!="sp.") %>% filter(Distribution=="Endemic to Greece") %>% dplyr::select(Species,Distribution, Region) %>% distinct(.) %>% group_by(Region) %>% summarise(number_of_endemic_species=n()) %>% na.omit()
 
 species_Region <- census_all_species_all_caves %>% filter(species_epithet!="sp.") %>% dplyr::select(Species,Region) %>% distinct() %>% group_by(Region) %>% summarise(number_of_species=n()) %>% na.omit()
@@ -268,7 +86,7 @@ caves_species_region <- species_Region %>% left_join(caves_Region, by=c("Region"
 
 caves_species_region$Variable <- factor(caves_species_region$Variable, levels = c("number_of_caves","number_of_species","number_of_endemic_species","number_of_troglobiont_species"))
 
- caves_species_region_plot <- ggplot()+
+caves_species_region_plot <- ggplot()+
   geom_col(data = caves_species_region, aes(x=Region, y= number, fill=Variable),width=0.82, position = position_dodge(width = 0.82),show.legend = T)+
   geom_text(data = caves_species_region,aes(x =Region,y= number, label=number,group=Variable), position=position_dodge(width = 0.87), vjust=-0.25,size=5)+
   scale_y_continuous(breaks = seq(0,280,20),limits = c(0,285),expand = c(0.01,0.4))+
@@ -281,12 +99,7 @@ caves_species_region$Variable <- factor(caves_species_region$Variable, levels = 
 ggsave("caves_species_region.png", plot = caves_species_region_plot, device = "png",width = 20,height = 11.25,units = "in", dpi = 100,path = "Website_plots/")
 
 
-#' ![Caves and species abudance in each administravive region of Greece](Website_plots/caves_species_region.png)
-#' 
-#' 
-#' ## Species taxonomy
-#' 
-## ---- warning=FALSE, message=FALSE, echo=FALSE---------------------------
+## Species taxonomy
 
 species_class <- species %>% dplyr::select(Species_Full_Name,Class) %>% distinct() %>% group_by(Class) %>% summarise(number_of_species=n()) %>% na.omit() %>% mutate(color_manual=colorRampPalette(c("orangered2","palegreen3","skyblue1","slateblue1","pink2","goldenrod1","slategray2"),space="Lab")( 20 ))
 
@@ -302,24 +115,10 @@ species_class_barplot <- ggplot()+
 
 ggsave("species_class_barplot.png", plot = species_class_barplot, device = "png",width = 20,height = 15,units = "in", dpi = 100,path = "Website_plots/")
 
-
-
-#' 
-#' ![Species of each class](Website_plots/species_class_barplot.png)
-#' 
-#' ### Species taxonomy table
-#' 
-#' Table for statistics tab on the website: for each phylum, for each class, for each order count number of families, genera, species
-#' 
-## ------------------------------------------------------------------------
+# Table for statistics tab on the website: for each phylum, for each class, for each order count number of families, genera, species
 species_na_order <- species %>% filter(is.na(Order))
 
 species_taxonomy_table <- species %>% dplyr::select(Species_Full_Name,Genus,Family,Order,Class,Phylum) %>% group_by(Genus,Family,Order,Class,Phylum) %>% summarise(Species=n()) %>% group_by(Family,Order,Class,Phylum) %>% summarise(Genera=n(),Species=sum(Species)) %>% group_by(Order,Class,Phylum) %>% summarise(Families=n(),Genera=sum(Genera),Species=sum(Species)) %>% group_by(Class,Phylum) %>% mutate(Orders=n()) %>% ungroup()
-
-
-
-#' 
-## ------------------------------------------------------------------------
 
 # Create Taxonomic Summary Table for The Database Statistics
 
@@ -365,15 +164,8 @@ database_taxonomic_summary %>% mutate(TAXA = cell_spec(TAXA, "html", bold = ifel
 
 # check the font type
 # import in Website: paste the html code in source code of the edit stats page, 
-
-
-#' 
-#' 
-#' 
-#' ### Taxonomy endemic 
-#' 
-#' 
-## ---- warning=FALSE, message=FALSE, echo=FALSE---------------------------
+#
+### Taxonomy endemic 
 
 species_class_endemic <- species %>% filter(Distribution=="Endemic to Greece") %>% dplyr::select(Species_Full_Name,Class) %>% distinct() %>% group_by(Class) %>% summarise(number_of_species=n()) %>% na.omit()
 
@@ -388,12 +180,7 @@ ggplot()+
 
 ggsave("species_class_barplot_endemic.jpeg", plot = last_plot(), device = "jpeg", dpi = 300,path = "Plots/")
 
-
-#' 
-#' 
-#' * bar plots with Arachnida, Insecta, Malacostrata orders
-#' 
-## ---- warning=FALSE, message=FALSE, echo=FALSE,fig.height=15,fig.width=10----
+# bar plots with Arachnida, Insecta, Malacostrata orders
 
 most_abudant_classes <- species %>% filter(Class=="Arachnida" | Class=="Insecta" | Class=="Malacostraca") %>% group_by(Class,Order) %>% summarise(number_of_species=n())
 
@@ -410,39 +197,17 @@ ggplot()+
 
 ggsave("most_abudant_classes.jpeg", plot = last_plot(), width = 15,height = 20,units = "cm",device = "jpeg", dpi = 300,path = "Plots/")
 
-
-
-#' 
-#' 
-#' ## Per administrative division
-#' 
-#' ### Species
-#' 
-## ---- warning=FALSE, message=FALSE, echo=FALSE---------------------------
+## Per administrative division
+### Species
 species_Region <- census_all_species_all_caves %>% filter(species_epithet!="sp.") %>% dplyr::select(Species,Region) %>% distinct() %>% group_by(Region) %>% summarise(number_of_species=n()) %>% na.omit()
 
 species_Municipality <- census_all_species_all_caves %>% filter(species_epithet!="sp.") %>% dplyr::select(Species,Municipality) %>% distinct() %>% group_by(Municipality) %>% summarise(number_of_species=n()) %>% na.omit()
 
-
-
-
-#' 
-#' ### Caves
-#' 
-## ---- warning=FALSE, message=FALSE, echo=FALSE---------------------------
+### Caves
 
 caves_municipality <- caves %>% dplyr::select(Cave_ID,Cave_Name,Municipality) %>% distinct() %>% group_by(Municipality) %>% summarise(number_of_caves=n()) %>% na.omit()
 
-
-
-#' 
-#' 
-#' 
-#' ## Ecological classification
-#' 
-#' For all species. 
-#' 
-## ---- warning=FALSE, message=FALSE, echo=FALSE---------------------------
+## Ecological classification
 
 species_classification <- species %>% dplyr::select(Species_Full_Name, Classification)
 
@@ -480,10 +245,7 @@ coord_polar(theta = "y")
 ggsave("species_classification_summary_pie.jpeg", plot = last_plot(), device = "jpeg", dpi = 300,path = "Plots/")
 
 
-#' 
-#' For endemic species. 
-#' 
-## ---- warning=FALSE, message=FALSE, echo=FALSE---------------------------
+# For endemic species. 
 
 species_classification_categories <- data.frame(Classification=unique(species$Classification))
 
@@ -503,9 +265,6 @@ ggplot()+
 ggsave("species_ecological_classification_only_endemic.jpeg", plot = last_plot(), device = "jpeg", dpi = 300,path = "Plots/")
 
 
-#' 
-## ---- warning=FALSE, message=FALSE, echo=FALSE---------------------------
-
 classification_all_and_endemic <- rbind(species_classification_summary_endemic_all_categories,species_classification_summary)
 
 classification_all_and_endemic$Classification <- factor(classification_all_and_endemic$Classification,levels = c("Accidental","Trogloxene","Stygoxene","Stygophile","Troglophile","Stygobiont","Troglobiont"))
@@ -522,15 +281,8 @@ species_ecological_classification_all_and_endemic <- ggplot()+
 ggsave("species_ecological_classification_all_and_endemic.png", plot = species_ecological_classification_all_and_endemic, device = "png",width = 20,height = 11.25,units = "in", dpi = 100,path = "Website_plots/")
 
 
-#' 
-#' ![Ecological classification comparison of all species with the greek endemics](Website_plots/species_ecological_classification_all_and_endemic.png)
-#' 
-#' ## Locus Typicus
-#' 
-## ---- warning=FALSE, message=FALSE, echo=FALSE---------------------------
+## Locus Typicus
 species_class_locus <- species %>% filter(!(is.na(Locus_Typicus_Cave))) %>% dplyr::select(Species_Full_Name,Class) %>% distinct() %>% group_by(Class) %>% summarise(number_of_species=n()) %>% na.omit()
-
-
 
 ggplot()+
   geom_col(data = species_class_locus, aes(x=Class, y= number_of_species, fill=Class),show.legend = F)+
@@ -543,10 +295,6 @@ ggplot()+
 
 ggsave("species_class_barplot_locus_typicus.jpeg", plot = last_plot(), device = "jpeg", dpi = 300,path = "Plots/")
 
-
-#' 
-#' 
-## ---- warning=FALSE, message=FALSE, echo=FALSE---------------------------
 species_class_locus_typicus_count <- species %>% filter(!(is.na(Locus_Typicus_Cave))) %>% dplyr::select(Species_Full_Name,Class,Locus_Typicus_Cave,Locus_Typicus_Cave_ID) %>% distinct() %>% group_by(Locus_Typicus_Cave_ID,Locus_Typicus_Cave) %>% summarise(number_of_species=n()) %>% na.omit() %>% arrange(desc(number_of_species))
 
 species_class_locus_typicus_count_dist <- species_class_locus_typicus_count %>% group_by(number_of_species) %>% summarise(number_of_caves=n())
@@ -563,19 +311,11 @@ species_class_locus_typicus_count_dist <- species_class_locus_typicus_count %>% 
 ggsave("cave_dist_locus_typicus.jpeg", plot = last_plot(), device = "jpeg", dpi = 300,path = "Plots/")
  
 
-
-#' 
-## ---- warning=FALSE, message=FALSE, echo=FALSE---------------------------
 kable(x = head(species_class_locus_typicus_count,15))
 
-#' 
-#' 
-#' # Species Richness and Altitude
-#' 
-## ------------------------------------------------------------------------
+# Species Richness and Altitude
 
 caves_per_altitude <- caves %>% distinct(Cave_ID,Altitude,Region) %>% na.omit() %>% mutate(Bins=cut(Altitude,breaks=seq(0,2200,by=100))) %>% group_by(Bins) %>%  mutate(Mean_altitude=mean(Altitude)) %>% mutate(number_of_caves=n()) %>% distinct(Mean_altitude,Bins,number_of_caves) #
-
 
 ggplot()+
   geom_line(data = caves_per_altitude, aes(x=Mean_altitude, y=number_of_caves),show.legend = T)+
@@ -589,9 +329,6 @@ ggplot()+
 
 ggsave("caves_per_altitude.jpeg", plot = last_plot(), device = "jpeg", dpi = 300,path = "Plots/")
 
-#' 
-#' 
-## ---- warning=FALSE, message=FALSE, echo=FALSE---------------------------
 
 species_per_altitude <- census_all_species_all_caves %>% filter(species_epithet!="sp.") %>% distinct(Species,Classification,Class,Altitude) %>% mutate(Classification_short=gsub(pattern="\\?",replacement = "",x = Classification)) %>% mutate(Bins=cut(Altitude,breaks=seq(0,2200,by=100))) %>% group_by(Bins) %>% mutate(Mean_altitude=mean(Altitude)) %>% distinct(Species,Classification,Class,Mean_altitude) #
 
@@ -610,11 +347,6 @@ ggplot()+
 ggsave("species_per_altitude.jpeg", plot = last_plot(), device = "jpeg", dpi = 300,path = "Plots/")
 
 
-#' 
-#' 
-#' 
-## ---- warning=FALSE, message=FALSE, echo=FALSE---------------------------
-
 species_per_altitude_summary_classification <- species_per_altitude %>% group_by(Mean_altitude,Classification) %>% summarise(number_of_species=n())
 
 ggplot()+
@@ -630,12 +362,6 @@ ggplot()+
 
 ggsave("species_per_altitude_classification.jpeg", plot = last_plot(), device = "jpeg", dpi = 300,path = "Plots/")
 
-
-
-
-#' 
-#' 
-## ---- warning=FALSE, message=FALSE, echo=FALSE---------------------------
 
 species_per_altitude_summary_class <- species_per_altitude %>% group_by(Mean_altitude,Class) %>% summarise(number_of_species=n()) 
 
@@ -655,12 +381,8 @@ ggplot()+
 
 ggsave("species_per_altitude_class.jpeg", plot = last_plot(), device = "jpeg", dpi = 300,path = "Plots/")
 
-#' 
-#' # Red Lists
-#' 
-#' ## IUCN status
-#' 
-## ---- warning=FALSE, message=FALSE, echo=FALSE---------------------------
+# Red Lists
+## IUCN status
 iucn_species <- species %>% group_by(IUCN_Red_List) %>% summarise(number_of_species=n()) %>% mutate(frequency=round(number_of_species/sum(number_of_species),digits = 3)) %>% mutate(Red_List="IUCN Red List") %>% dplyr::rename(., Categories=IUCN_Red_List) %>% rbind(.,data_frame(Categories="EN - Endangered",number_of_species=0,frequency=0,Red_List="IUCN Red List"))
 
 kable(iucn_species)
@@ -697,11 +419,7 @@ coord_polar(theta = "y")
 ggsave("IUCN_Red_List_pie.jpeg", plot = last_plot(), device = "jpeg", dpi = 300,path = "Plots/")
 
 
-
-#' 
-#' ### IUCN and ecological classification
-#' 
-## ---- warning=FALSE, message=FALSE, echo=FALSE---------------------------
+### IUCN and ecological classification
 iucn_species_classification <- species %>% group_by(IUCN_Red_List, Classification) %>% summarise(number_of_species=n()) %>% mutate(frequency=round(number_of_species/sum(number_of_species),digits = 3)) %>% mutate(Red_List="IUCN Red List") %>% dplyr::rename(., Categories=IUCN_Red_List) #%>% rbind(.,data_frame(Categories="EN - Endangered",number_of_species=0,frequency=0,Red_List="IUCN Red List"))
 
 ggplot()+
@@ -738,13 +456,7 @@ ggplot()+
 ggsave("iucn_species_classification_barplot_grid.jpeg", plot = last_plot(), device = "jpeg", dpi = 300,path = "Plots/")
 
 
-#' 
-#' 
-#' 
-#' ## Greek red data book
-#' 
-## ---- warning=FALSE, message=FALSE, echo=FALSE---------------------------
-
+## Greek red data book
 greek_red_data_species <- species %>% group_by(Greek_Red_Data_Book) %>% summarise(number_of_species=n()) %>% mutate(frequency=round(number_of_species/sum(number_of_species),digits = 3)) %>% mutate(Red_List="Greece's Red Data Book") %>% dplyr::rename(., Categories=Greek_Red_Data_Book)
 
 kable(greek_red_data_species)
@@ -782,10 +494,7 @@ ggsave("greek_red_data_species_pie.jpeg", plot = last_plot(), device = "jpeg", d
 
 
 
-#' 
-#' ## Both Red Lists
-#' 
-## ---- warning=FALSE, message=FALSE, echo=FALSE---------------------------
+## Both Red Lists
 
 red_lists_species <- rbind(greek_red_data_species,iucn_species)
 
@@ -803,12 +512,7 @@ red_lists_data_species_plot <- ggplot()+
 ggsave("red_lists_data_species.png", plot = red_lists_data_species_plot, device = "png",width = 20,height = 11.25,units = "in", dpi = 100,path = "Website_plots/")
 
 
-#' 
-#' ![Species assesments across Red lists categories ](Website_plots/red_lists_data_species.png)
-#' 
-#' # Protection status caves
-#' 
-## ---- warning=FALSE, message=FALSE, echo=FALSE---------------------------
+# Protection status caves
 
 caves_protection <- strsplit(x = caves$Protection_Status,split = "|",fixed=TRUE)
 
@@ -824,7 +528,7 @@ caves_protection_data_summary_type$Protection_Type_l <- factor(gsub(pattern = " 
 ggplot()+
   geom_col(data = caves_protection_data_summary_type, aes(x=Protection_Type_l, y= number_of_caves, fill=Protection_Type_l),width=0.8,show.legend = F)+
   geom_text(data = caves_protection_data_summary_type,aes(x =Protection_Type_l,y= number_of_caves, label=number_of_caves), position=position_dodge(width=0.7), vjust=-0.25,size=5)+
-  scale_y_continuous(breaks = seq(0,300,50),limits = c(0,300))+
+  scale_y_continuous(breaks = seq(0,350,50),limits = c(0,350))+
   #scale_x_discrete(labels=Protection_Type_label)+
   labs(x="Protection", y= "Number of caves")+
   theme_bw()+
@@ -834,9 +538,6 @@ ggsave("caves_protection_data_type.png", plot = last_plot(), device = "png",widt
 
 
 
-#' 
-#' 
-## ------------------------------------------------------------------------
 ggplot()+
   geom_col(data = caves_protection_data_summary_type, aes(x=Protection_Type, y= frequency, fill=Protection_Type),show.legend = F)+
   geom_text(data = caves_protection_data_summary_type,aes(x =Protection_Type,y= frequency, label=frequency), position=position_dodge(width=0.7), vjust=-0.25,size=2.8)+
@@ -847,11 +548,7 @@ ggplot()+
 
 ggsave("caves_protection_data_type_frequency.jpeg", plot = last_plot(), device = "jpeg", dpi = 300,path = "Plots/")
 
-#' 
-#' 
-#' # Protection status species
-#' 
-## ---- warning=FALSE, message=FALSE, echo=FALSE---------------------------
+# Protection status species
 species_protection <- strsplit(x = species$Protection_Status,split = "|",fixed=TRUE)
 
 species_protection_data <- data_frame(Species_Protection=unlist(species_protection),Species=rep.int(species$Species_Full_Name,times = sapply(species_protection,length)),Class=rep.int(species$Class,times = sapply(species_protection,length)),Classification=rep.int(species$Classification,times = sapply(species_protection,length)))
@@ -873,8 +570,6 @@ species_protection_data_summary <- species_protection_data %>% group_by(Species_
 kable(x = species_protection_data_summary)
 
 
-#' 
-## ---- warning=FALSE, message=FALSE, echo=FALSE---------------------------
 species_protection_data_classification <- species_protection_data %>% mutate(Protection_Status=if_else(is.na(Species_Protection)==TRUE,"Not protected","Protected")) %>% distinct(Classification,Protection_Status,Species) %>% group_by(Classification,Protection_Status) %>% summarise(number_of_species=n()) %>% ungroup() %>% spread(key = Protection_Status,value = number_of_species,fill=0) %>% gather(key =Protection_Status,value =number_of_species,  -Classification)
 
 species_protection_data_classification$Classification <- factor(species_protection_data_classification$Classification,levels = c("Accidental","Trogloxene","Stygoxene","Stygophile","Troglophile","Stygobiont","Troglobiont"))
@@ -891,18 +586,9 @@ species_protection_data_classification_plot <- ggplot()+
 ggsave("species_protection_data_classification.png", plot = species_protection_data_classification_plot, device = "png",width = 20,height = 11.25,units = "in", dpi = 100,path = "Website_plots/")
 
 
-#' 
-#' ![Number of protected species across their ecological classification](Website_plots/species_protection_data_classification.png)
-#' 
-#' 
-## ---- warning=FALSE, message=FALSE, echo=FALSE---------------------------
 species_protection_data_classification %>% spread(key = Protection_Status,value = number_of_species,fill=0) %>% kable()
 
-#' 
-#' 
-#' # Species per cave
-#' 
-## ---- warning=FALSE, message=FALSE, echo=FALSE---------------------------
+# Species per cave
 
 census_caves_per_species <- census_all_species %>% filter(species_epithet!="sp.") %>% distinct(Species,Cave_ID, Cave_Name,Classification) %>% group_by(Species) %>% summarise(number_of_caves=n()) %>% arrange(desc(number_of_caves))
 
@@ -924,16 +610,9 @@ ggsave("census_species_per_cave_dist.jpeg", plot = last_plot(), device = "jpeg",
  
 
 
-#' 
-#' 
-#' 
-## ---- warning=FALSE, message=FALSE, echo=FALSE---------------------------
 kable(x = head(census_species_per_cave,20))
 
-#' 
-#' ## Endemic species per region
-#' 
-## ---- warning=FALSE, message=FALSE, echo=FALSE---------------------------
+## Endemic species per region
 
 species_region_endemic <- census_all_species_all_caves %>% filter(species_epithet!="sp.") %>% filter(Distribution=="Endemic to Greece") %>% distinct( Species,Region) %>% group_by(Species) %>% summarize(number_of_regions=n()) %>% group_by(number_of_regions) %>% summarise(number_of_species=n())
 
@@ -950,11 +629,7 @@ ggplot(data=species_region_endemic)+
 ggsave("dist_species_region_endemic.jpeg", plot = last_plot(), device = "jpeg",width = 13,height = 18,units = "cm", dpi = 300,path = "Plots/")
 
 
-#' 
-#' 
-#' ## Ecological classification
-#' 
-## ---- warning=FALSE, message=FALSE, echo=FALSE---------------------------
+## Ecological classification
 
 #census_species_per_cave_classification <- census_all_species %>% filter(species_epithet!="sp.") %>% distinct(Species,Cave_ID, Cave_Name,Classification) %>% group_by(Cave_ID,Cave_Name,Classification) %>% summarise(number_of_species=n()) %>% arrange(desc(number_of_species)) %>% na.omit() %>% spread(Classification,number_of_species,fill = 0) %>% ungroup() %>% mutate(Troglobiont_species=rowSums(.[9:10]))
 
@@ -965,12 +640,8 @@ census_species_per_cave_classification_trogl <- census_species_per_cave_classifi
 kable(x = head(census_species_per_cave_classification_trogl,20))
 
 
-#' 
-#' # Taxon Occurencies Distribution
-#' 
-#' * Species, Genera, Families abudance in caves of Greece
-#' 
-## ---- warning=FALSE, message=FALSE, echo=FALSE---------------------------
+# Taxon Occurencies Distribution
+# Species, Genera, Families abudance in caves of Greece
 
 # Species occurencies distributions
 species_occurencies_caves <- census_all_species %>% group_by(Species) %>% filter(species_epithet!="sp.") %>% summarise(taxon_occurences=n()) %>% group_by(taxon_occurences) %>% summarise(number_of_taxon=n()) %>% mutate(taxon="Species")
@@ -1052,10 +723,7 @@ distributions_occurences_taxa <- grid.arrange(dist_species_occurencies_caves,arr
 ggsave("distributions_distributions_occurences_taxa.jpeg", plot = distributions_occurences_taxa, device = "jpeg",width = 13,height = 18,units = "cm", dpi = 300,path = "Plots/")
 
 
-#' 
-#' ## Without chiroptera
-#' 
-## ---- warning=FALSE, message=FALSE, echo=FALSE---------------------------
+## Without chiroptera
 
 species_occurencies_no_chiroptera <- census_all_species %>% filter(Order!="Chiroptera",species_epithet!="sp.")
 
@@ -1139,10 +807,7 @@ distributions_occurences_taxa <- grid.arrange(dist_species_occurencies_caves,arr
 ggsave("distributions_distributions_occurences_taxa_no_chiroptera.jpeg", plot = distributions_occurences_taxa, device = "jpeg",width = 13,height = 18,units = "cm", dpi = 300,path = "Plots/")
 
 
-#' 
-#' ## Only chiroptera
-#' 
-## ---- warning=FALSE, message=FALSE, echo=FALSE---------------------------
+## Only chiroptera
 
 species_occurencies_only_chiroptera <- census_all_species %>% filter(Order=="Chiroptera", species_epithet!="sp.")
 species_occurencies_only_chiroptera2 <- species_occurencies_only_chiroptera %>% dplyr::select(Order,Family,Genus,Species) %>% distinct()
@@ -1227,11 +892,7 @@ distributions_occurences_taxa <- grid.arrange(dist_species_occurencies_caves,dis
 ggsave("distributions_distributions_occurences_taxa_only_chiroptera.jpeg", plot = distributions_occurences_taxa, device = "jpeg",width = 13,height = 18,units = "cm", dpi = 300,path = "Plots/")
 
 
-#' 
-#' ## Taxon - Subtaxon Distribution
-#' 
-#' 
-## ---- warning=FALSE, message=FALSE, echo=FALSE---------------------------
+## Taxon - Subtaxon Distribution
 # Genus
 species_occurencies_unique_species_genus_dist <- species %>% dplyr::select(Species_Full_Name,Genus) %>% distinct() %>% group_by(Genus) %>% summarise(number_of_species=n()) %>% group_by(number_of_species) %>% summarise(number_of_taxon=n()) %>% mutate(taxon="Genus")
 
@@ -1257,9 +918,6 @@ ggplot()+
   theme(panel.grid.minor = element_blank(), panel.grid.major = element_blank())
 ggsave("species_taxon_distributions_plot.jpeg", plot = last_plot(), device = "jpeg", dpi = 300,path = "Plots/")
 
-
-#' 
-## ---- warning=FALSE, message=FALSE, echo=FALSE---------------------------
 
 dist_class <- species_taxon_distributions %>% filter(taxon=="Class") %>% 
   ggplot(data=.)+
@@ -1312,10 +970,7 @@ ggsave("distributions_species_taxon.jpeg", plot = distributions_species_taxon, d
 
 
 
-#' 
-## ---- warning=FALSE, message=FALSE, echo=FALSE, eval=FALSE---------------
-## #determine order of appearance in facet_wrap
-## 
+#determine order of appearance in facet_wrap
 ## species_taxon_distributions$taxon_order <- factor(species_taxon_distributions$taxon, levels = c("Class","Order","Family","Genus"))
 ## 
 ## ggplot()+
@@ -1330,12 +985,8 @@ ggsave("distributions_species_taxon.jpeg", plot = distributions_species_taxon, d
 ## 
 ## ggsave("species_taxon_distributions_plot_facet.jpeg", plot = last_plot(), device = "jpeg", dpi = 300,path = "Plots/")
 
-#' 
-#' # Links to other databases
-#' 
-#' Cave Fauna of Greece database includes links of species to GBIF, Fauna Europea, IUCN, PESI and NCBI Taxonomy.  
-#' 
-## ----warning=FALSE, message=FALSE, echo=FALSE----------------------------
+# Links to other databases
+## Cave Fauna of Greece database includes links of species to GBIF, Fauna Europea, IUCN, PESI and NCBI Taxonomy.  
 
 species_links <- species %>% dplyr::select(Link_IUCN,Link_GBIF,Link_Fauna_Europaea,Link_NCBI,Link_PESI)
 
@@ -1344,11 +995,7 @@ species_links_summary <- data_frame(Source=c("Fauna Europaea","NCBI Taxonomy","G
 
 kable(species_links_summary)
 
-
-#' 
-#' Bar plots of the links. 
-#' 
-## ----warning=FALSE, message=FALSE, echo=FALSE----------------------------
+# Bar plots of the links. 
 
 ggplot()+
   geom_col(data = species_links_summary, aes(x=Source, y= Number_of_links, fill=Source),show.legend = F)+
@@ -1372,18 +1019,11 @@ ggsave("species_links_summary_frequency.jpeg", plot = last_plot(), device = "jpe
 
 
 
-#' 
-## ----warning=FALSE, message=FALSE, echo=FALSE----------------------------
 PESI_vs_Fauna_E <- species %>% filter((is.na(Link_PESI) & !is.na(Link_Fauna_Europaea)) | (is.na(Link_Fauna_Europaea) & !is.na(Link_PESI))) %>% dplyr::select(Species_Full_Name,Link_Fauna_Europaea,Link_PESI)
 
-#' 
-#' 
-#' # Census References
-#' 
-## ----warning=FALSE, message=FALSE, echo=FALSE----------------------------
+# Census References
 
 species_references_year_dist <- Census_references %>% group_by(Year) %>% summarise(publications_per_year=n())
-
 
 ggplot()+
   geom_line(data=species_references_year_dist,aes(x=Year, y= publications_per_year),color="red",show.legend = F)+
@@ -1394,10 +1034,6 @@ ggplot()+
   theme(panel.grid.minor = element_blank(), panel.grid.major = element_blank())
 
 ggsave("species_references_year_dist.jpeg", plot = last_plot(), device = "jpeg", dpi = 300,path = "Plots/")
-
-
-#' 
-## ----warning=FALSE, message=FALSE, echo=FALSE----------------------------
 
 species_references_year_dist$Cumulative_publications <- cumsum(species_references_year_dist$publications_per_year)
 
@@ -1413,16 +1049,11 @@ ggplot(data=species_references_year_dist)+
 ggsave("species_references_year_dist_cumulative.jpeg", plot = last_plot(), device = "jpeg", dpi = 300,path = "Plots/")
 
 
-#' 
-#' * New species discovered in time. (references)
-#' 
-## ----warning=FALSE, message=FALSE, echo=FALSE----------------------------
-
+# New species discovered in time. (references)
 
 census_long_man_reference <- census_long_man %>% left_join(Census_references,by=c("ReferenceShort"="Short"))
 
 census$species_epithet <- as.character(lapply(strsplit(as.character(census$Species), split=" "), "[", n=2))
-
 
 species_references_spreaded_arranged <- census_long_man_reference %>% ungroup() %>% dplyr::select(Species, ReferenceShort, Year) %>% group_by(Species,ReferenceShort, Year) %>% distinct(.) %>% arrange(.,Year) %>% ungroup() %>% mutate(Duplicates=duplicated(Species), species_epithet= as.character(lapply(strsplit(as.character(Species), split=" "), "[", n=2))) %>% filter(species_epithet!="sp.") %>% mutate(.,First_occurance=if_else(Duplicates=="FALSE",1,0)) %>% na.omit() %>% mutate(Cumulative_occurance= cumsum(First_occurance)) %>% mutate(Classification="All species") %>% dplyr::select(-c(Species,species_epithet,First_occurance)) %>% distinct(.)
 
@@ -1439,10 +1070,6 @@ ggsave("species_occurrence_accumulation.jpeg", plot = last_plot(), device = "jpe
 
 
 qq <- species %>% filter(Distribution=="Endemic to Greece")
-
-#' 
-#' 
-## ----warning=FALSE, message=FALSE, echo=FALSE----------------------------
 
 
 endemic_cumulative_species <- census_long_man_reference %>% left_join(species,by=c("Species"="Species_Full_Name")) %>% dplyr::select(Species,Distribution, ReferenceShort, Year) %>% group_by(Species,Distribution,ReferenceShort, Year) %>% distinct(.) %>% arrange(.,Year) %>% ungroup() %>% mutate(Duplicates=duplicated(Species), species_epithet= as.character(lapply(strsplit(as.character(Species), split=" "), "[", n=2))) %>% filter(species_epithet!="sp.") %>% mutate(.,First_occurance=if_else(Duplicates=="FALSE",1,0)) %>% na.omit() %>% filter(First_occurance==1) %>% group_by(Year,Distribution) %>% summarise(Occurance_species_year= n()) %>% group_by(Distribution) %>% mutate(Cumulative_occurance= cumsum(Occurance_species_year)) %>% filter(Distribution=="Endemic to Greece") %>% mutate(Classification="Endemic species to Greece") %>% dplyr::select(-Occurance_species_year,-Distribution)
@@ -1463,12 +1090,6 @@ species_occurrence_accumulation_classification_plot <- ggplot()+
 ggsave("species_occurrence_accumulation_classification.png", plot = species_occurrence_accumulation_classification_plot, device = "png",width = 20,height = 11.25,units = "in", dpi = 100,path = "Website_plots/")
 
 
-
-#' 
-#' ![Species accumulation from published data](Website_plots/species_occurrence_accumulation_classification.png)
-#' 
-## ----warning=FALSE, message=FALSE, echo=FALSE----------------------------
-
 species_references_spreaded_arranged_article <- species_references_spreaded_arranged %>% filter(Duplicates=="FALSE") %>% group_by(ReferenceShort, Year) %>% summarise(n_new_species=n()) %>% group_by(n_new_species) %>% summarise(n_references=n())
 
 ggplot()+
@@ -1482,11 +1103,7 @@ ggplot()+
 
 ggsave("species_references_spreaded_arranged_article.jpeg", plot = last_plot(), device = "jpeg", dpi = 300,path = "Plots/")
 
-
-#' 
-#' ## Classes growth 
-#' 
-## ----warning=FALSE, message=FALSE, echo=FALSE----------------------------
+## Classes growth 
 
 census_long_man_reference_all_species <- census_long_man_reference %>% left_join(species,by=c("Species"="Species_Full_Name")) %>% dplyr::select(Species,Class, ReferenceShort, Year) %>% group_by(Species,Class,ReferenceShort, Year) %>% distinct(.) %>% arrange(.,Year) %>% ungroup() %>% mutate(Duplicates=duplicated(Species), species_epithet= as.character(lapply(strsplit(as.character(Species), split=" "), "[", n=2))) %>% filter(species_epithet!="sp.") %>% mutate(.,First_occurance=if_else(Duplicates=="FALSE",1,0)) %>% na.omit() %>% filter(First_occurance==1) %>% mutate(Cumulative_occurance_species= cumsum(First_occurance)) %>% group_by(Year,Class) %>% summarise(Occurance_species_class_year= n()) %>% group_by(Class) %>% mutate(Cumulative_occurance_class= cumsum(Occurance_species_class_year)) %>% filter(Class %in% c("Insecta","Mammalia","Arachnida","Malacostraca"))
 
@@ -1503,105 +1120,8 @@ ggsave("species_class_occurence_accumulation.jpeg", plot = last_plot(), device =
 
 
 
-#' 
-#' # Spatial Analysis
-#' 
-## ---- child='CFG_Spatial_Analysis.Rmd'-----------------------------------
+# Spatial Analysis
 
-#' 
-#' 
-## ---- warning=FALSE, message=FALSE, echo=FALSE---------------------------
-### Working Directory
-
-#setwd("C:/Users/inikoloudakis/Dropbox/INSPEE Team Folder/Conservation of the cave fauna of Greece - MAVA/Cave_Fauna_database/Cave_Fauna_Database_Analysis")
-
-# Data manipulation packages
-library(readxl)
-library(readr)
-library(ggplot2)
-library(scales)
-library(gridExtra)
-library(grid)
-library(reshape2)
-library(dplyr)
-library(knitr)
-library(tidyr)
-library(httr)
-library(broom)
-library(stringr)
-
-## Data for species
-
-library(rredlist)
-library(taxize)
-library(rgbif)
-library(ISOcodes)
-library(spocc)
-
-# Spatial analysis packages
-
-# x <- c("spocc","isocodes","rgbif","taxize","rredlist","raster","RColorBrewer","ggmap", "rgdal", "rgeos", "maptools", "tmap","Rcpp","sp")
-# #install.packages(x) # warning: uncommenting this may take a number of minutes
-# lapply(x, library, character.only = TRUE)
-library(RColorBrewer)
-library(ggmap)
-library(rgdal)
-library(geosphere)
-library(GISTools)
-library(leaflet)
-library(rgeos)
-library(maptools)
-#library(tmap)
-library(Rcpp)
-library(sp)
-library(raster) ##Load the Raster Library
-
-# Species statistics
-
-library(red)
-library(vegan)
-
-packages <- c("readxl","readr","ggplot2","scales","gridExtra","dplyr", "knitr", "tidyr","RColorBrewer","ggmap","rgdal","rgeos","maptools","tmap","Rcpp","sp","raster","broom","red","vegan")
-
-write_bib(x = packages,file = "packages_used.bib")
-
-
-#' 
-#' 
-## ---- warning=FALSE, message=FALSE, echo=FALSE---------------------------
-# Store the file names of the Data folder
- 
- data_files <- list.files(path = "Data")
- 
- # Data import from Database Export, the files are choosen automatically based on their name. The folder Data must contain only the latest data files.
- Cave_References <- read_delim(file = paste0("Data/",grep("Cave_References",data_files,value = TRUE)),delim = "\t")
- 
- caves <- read_delim(file = paste0("Data/",grep("Caves",data_files,value = TRUE)),delim = "\t")
- 
- census <- read_delim(file = paste0("Data/",grep("Census_\\d",data_files,value = TRUE)),delim = "\t")
- 
- Census_references <- read_delim(file = paste0("Data/",grep("Census_references",data_files,value = TRUE)),delim = "\t")
- 
-species <- read_delim(file = paste0("Data/",grep("Species_",data_files,value = TRUE)),delim = "\t") %>% mutate(Classification=gsub(pattern="\\?",replacement = "",x = Classification))# Data import from Database Export
-
-
-#' 
-#' 
-## ---- warning=FALSE, message=FALSE, echo=FALSE---------------------------
-census$species_epithet <- as.character(lapply(strsplit(as.character(census$Species), split=" "), "[", n=2))
-
-census_all_species <- census %>% left_join(species,by=c("Species"="Species_Full_Name"))
-
-census_all_species_all_caves <- census_all_species %>% dplyr::select(-Cave_Name) %>% left_join(caves, by=c("Cave_ID"="Cave_ID"))
-
-census_long_str_man <- strsplit(x = census_all_species$Reference_Short,split = "|",fixed=TRUE)
-census_long_str_man_id <- strsplit(x = census_all_species$Reference_ID,split = "|",fixed=TRUE)
-
-census_long_man <- data_frame(ReferenceShort=unlist(census_long_str_man),reference_id=unlist(census_long_str_man_id),CaveName=rep.int(census_all_species$Cave_Name,times = sapply(census_long_str_man,length)),Cave_ID=rep.int(census_all_species$Cave_ID,times = sapply(census_long_str_man,length)),Census_id=rep.int(census_all_species$Census_ID,times = sapply(census_long_str_man,length)),Species=rep.int(census_all_species$Species,times = sapply(census_long_str_man,length))) %>% group_by(ReferenceShort,Cave_ID,CaveName,Species,Census_id) %>% summarise(n=n()) %>% ungroup() %>% mutate(Species=trimws(Species,"r"))
-
-
-#' 
-#' 
 #' # Spatial analysis of Caves
 #' 
 #' For the creation of the caves geodatabase in r we used multiple packages. 
@@ -1707,13 +1227,6 @@ caves_in_municipa$ID <- as.character(seq(1:nrow(caves_in_municipa)))
 
 caves_in_municipa2 <- caves_in_municipa %>% left_join(., Caves_Database_kml_to_txt, by=c("ID"="ID"))
 
-
-
-
-#' 
-#' 
-## ---- warning=FALSE, message=FALSE, echo=FALSE,eval=TRUE-----------------
-
 caves_municipality_join <- caves %>% dplyr::select(Cave_ID,Cave_Name,Municipality) %>% distinct() %>% group_by(Municipality) %>% summarise(number_of_caves=n()) %>% na.omit() %>% left_join(.,municipalities_greece_long_names_eng, by=c("Municipality"="Municipalities_ISO_843"),copy=TRUE) %>% left_join(.,municipalities_greece_long_names_eng, by=c("KWD_YPES"="KWD_YPES"),copy=TRUE) %>% dplyr::select(Municipalities_ISO_843,KWD_YPES,number_of_caves) %>% ungroup() %>% filter(!(KWD_YPES=="9170" & !is.na(KWD_YPES)))
 
 # Irakleio is 2 times but they are different municipalities. Irakleio Attikis has 9170 code so we removed it.
@@ -1725,11 +1238,7 @@ caves_species_municipality_join <-  caves_municipality_join %>% left_join(.,spec
 
 
 
-#' 
-#' 
-#' ## Protected areas of Greece
-#' 
-## ---- warning=FALSE, message=FALSE, echo=FALSE---------------------------
+## Protected areas of Greece
 ## Function capitals to lower
 
 ### caves with all protected areas
@@ -1739,10 +1248,6 @@ capwords <- function(s, strict = FALSE) {
                              sep = "", collapse = " " )
     sapply(strsplit(s, split = " "), cap, USE.NAMES = !is.null(names(s)))
 }
-
-#' 
-#' 
-## ---- warning=FALSE, message=FALSE, echo=FALSE---------------------------
 
 # All new Natura
 
@@ -1848,11 +1353,6 @@ caves_protection <- caves %>% dplyr::select(Cave_ID) %>% left_join(.,caves_in_ov
 ## some names in () had lower case first letters so i changed them manually.
 #write_delim(caves_protection,path = "caves_protection.txt",delim = "\t",col_names = T)
 
-
-
-#' 
-#' 
-## ---- warning=FALSE, message=FALSE, echo=FALSE---------------------------
 #### JOIN FILES ##########
 
 caves_all_shapefiles <- caves_in_municipa2 %>% dplyr::select(-Cave_Name,-Longitude,-Latitude)%>% left_join(.,caves_protection, by=c("Cave_ID"="Cave_ID"))
@@ -1863,12 +1363,7 @@ caves_all_info <- caves %>% left_join(.,caves_all_shapefiles, by=c("Cave_ID"="Ca
 
 
 
-#' 
 #' ## New Natura2000 v30
-#' 
-## ---- warning=FALSE, message=FALSE, echo=FALSE,eval=T--------------------
-
-
 # Which are different
 
 caves_protection <- strsplit(x = caves$Protection_Status,split = "|",fixed=TRUE)
@@ -1913,18 +1408,11 @@ ggplot()+
 ggsave("caves_per_altitude.png", plot = last_plot(), device = "png",width = 20,height = 20,units = "cm",dpi = 300 ,path = "Plots/")
 
 
-#' 
-#' 
 #' ## Species and caves per region
-#' 
-## ----eval=TRUE, cache=TRUE,warning=FALSE, message=FALSE, echo=FALSE------
 greece_level_2_shape <-getData('GADM', country='GRC', level=2)  ##Get the Province Shapefile for France
 
 greece_level_2 <- spTransform(greece_level_2_shape, CRS("+proj=longlat +datum=WGS84"))
 
-
-#' 
-## ----warning=FALSE, message=FALSE, echo=FALSE----------------------------
 greece_regions <- c("Athos","East Macedonia and Thrace","Attica ","West Greece","West Macedonia","Ionian Islands ","Epirus ","Central Macedonia","Crete","South Aegean","Peloponnese ","Central Greece ","Thessaly","North Aegean")
 
 caves_Region <- caves %>% dplyr::select(Cave_ID, Region) %>% distinct() %>% group_by(Region) %>% summarize(number_of_caves=n()) %>% na.omit() %>% mutate(color_manual=colorRampPalette(c("orangered2","palegreen3","skyblue1","slateblue1","pink2","sienna3"),space="Lab")( 14 ))
@@ -1936,9 +1424,6 @@ species_Region <- census_all_species_all_caves %>% dplyr::select(Species,Region)
 species_Region$regions <- greece_regions
 
 
-#' 
-## ----warning=FALSE, message=FALSE, echo=FALSE----------------------------
-# Transform to dataframe
 # https://www.r-bloggers.com/using-r-working-with-geospatial-data-and-ggplot2/
 
 greece_level_2@data$id <- rownames(greece_level_2@data)
