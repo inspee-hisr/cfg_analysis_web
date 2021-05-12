@@ -32,15 +32,15 @@ Poduromorpha	 	4	9	10
 Hexanauplia	2	4	17	33
 Cyclopoida	 	1	8	16
 Harpacticoida	 	3	9	17
-Insecta	12	46	126	249
+Insecta	12	46	128	258
 Archaeognatha	 	1	3	3
 Blattodea	 	1	1	1
-Coleoptera	 	14	73	145
+Coleoptera	 	14	73	146
 Diptera	 	9	17	24
 Hemiptera	 	2	3	3
-Hymenoptera	 	1	1	1
+Hymenoptera	 	1	3	5
 Lepidoptera	 	7	11	12
-Orthoptera	 	2	5	42
+Orthoptera	 	2	5	46
 Psocoptera	 	4	4	5
 Siphonaptera	 	1	1	1
 Trichoptera	 	2	5	10
@@ -90,4 +90,4 @@ Gastropoda	2	15	32	65
 Littorinimorpha	 	2	2	2
 Stylommatophora	 	13	30	63
  	 	 	 	 
-TOTAL	64	194	440	874
+TOTAL	64	194	442	883
