@@ -32,6 +32,7 @@ library(raster) ##Load the Raster Library
 
 #library(red)
 library(vegan)
+library(ggdendro)
 
 data_files <- list.files(path = "Data")
  
@@ -1095,6 +1096,10 @@ ggplot()+
 
 ggsave("species_class_occurence_accumulation.jpeg", plot = last_plot(), device = "jpeg", dpi = 300,path = "Plots/")
 
+print("End CFG statistics")
+
+
+print("Begin cave fauna spatial analysis")
 
 
 # Spatial Analysis
@@ -1288,7 +1293,7 @@ caves_in_over_katafygia_agrias_zwhs <- Caves_Database_kml_to_txt %>% left_join(o
 
 
 #  left_join(.,over_natura_NEW_v30_d, by=c("Cave_ID"="Cave_ID")) %>% 
-caves_protection <- caves %>% dplyr::select(Cave_ID) %>% left_join(.,caves_in_over_natura, by=c("Cave_ID"="Cave_ID")) %>% left_join(.,caves_in_over_NEW_natura, by=c("Cave_ID"="Cave_ID")) %>% left_join(., caves_in_over_katafygia_agrias_zwhs, by=c("Cave_ID"="Cave_ID")) %>% mutate(NAME_LATIN_NATURA=gsub("NANA",NA_character_,gsub(" Kai "," and ",capwords(tolower(NAME_LATIN))))) %>% mutate(NAME_LATIN_NEW_NATURA=gsub("NANA",NA_character_,gsub(" Kai "," and ",capwords(tolower(NAME_LATIN_NEW_NATURA))))) %>% mutate(SITETYPE_NATURA_ALL=ifelse(is.na(SITETYPE), NA_character_, ifelse(SITETYPE=="SPA","Special Protection Area", ifelse(SITETYPE=="SCI","Special Area of Conservation", "Special Protection Area - Special Area of Conservation"))),SITETYPE_NEW_NATURA_ALL=ifelse(is.na(SITETYPE_NEW_NATURA), NA_character_, ifelse(SITETYPE_NEW_NATURA=="SPA","Special Protection Area", ifelse(SITETYPE_NEW_NATURA=="SCI","Special Area of Conservation", "Special Protection Area - Special Area of Conservation"))))
+caves_protection <- caves %>% dplyr::select(Cave_ID) %>% left_join(.,caves_in_over_natura, by=c("Cave_ID"="Cave_ID")) %>% left_join(.,caves_in_over_NEW_natura, by=c("Cave_ID"="Cave_ID")) %>% left_join(., caves_in_over_katafygia_agrias_zwhs, by=c("Cave_ID"="Cave_ID")) %>% mutate(NAME_LATIN_NATURA=gsub("NANA",NA_character_,gsub(" Kai "," and ",capwords(tolower(NAME_LATIN_NATURA))))) %>% mutate(NAME_LATIN_NEW_NATURA=gsub("NANA",NA_character_,gsub(" Kai "," and ",capwords(tolower(NAME_LATIN_NEW_NATURA))))) %>% mutate(SITETYPE_NATURA_ALL=ifelse(is.na(SITETYPE_NATURA), NA_character_, ifelse(SITETYPE_NATURA=="SPA","Special Protection Area", ifelse(SITETYPE_NATURA=="SCI","Special Area of Conservation", "Special Protection Area - Special Area of Conservation"))),SITETYPE_NEW_NATURA_ALL=ifelse(is.na(SITETYPE_NEW_NATURA), NA_character_, ifelse(SITETYPE_NEW_NATURA=="SPA","Special Protection Area", ifelse(SITETYPE_NEW_NATURA=="SCI","Special Area of Conservation", "Special Protection Area - Special Area of Conservation"))))
 
 ## some names in () had lower case first letters so i changed them manually.
 #write_delim(caves_protection,path = "caves_protection.txt",delim = "\t",col_names = T)
@@ -1540,7 +1545,7 @@ grid_100k_shapefile <- readOGR("Shapefiles/EEA_reference_grid_1_10_50_and_100_km
 
 
 grid_100k_shapefile_wgs84 <- spTransform(grid_100k_shapefile, CRS("+proj=longlat +datum=WGS84"))
-grid_100k_shapefile_dataframe <- tidy(grid_100k_shapefile_wgs84)
+grid_100k_shapefile_dataframe <- broom::tidy(grid_100k_shapefile_wgs84)
 
 grid_10k_shapefile <- readOGR("Shapefiles/EEA_reference_grid_1_10_50_and_100_kmgr/GR_10k.shp",verbose=TRUE)
 
@@ -1745,13 +1750,14 @@ YPOGEIA_YDATIKA_SYSTIMATA_wgs84 <- spTransform(YPOGEIA_YDATIKA_SYSTIMATA, CRS("+
 
 YPOGEIA_YDATIKA_SYSTIMATA_wgs84_data <- broom::tidy(YPOGEIA_YDATIKA_SYSTIMATA_wgs84)
 
+print("End of spatial analysis")
+
+
 #' # Numerical Analysis
 
 #' ## Q Mode
 #' 
 ## ---- warning=FALSE, message=FALSE, echo=FALSE---------------------------
-library(gclus)
-library(ggdendro)
 
 caves_crete <- caves %>% filter(Region=="Kriti")
 
@@ -1910,10 +1916,11 @@ ggplot() +
 
 ggsave("species_accumulation_curve.jpeg", plot = last_plot(), device = "jpeg", dpi = 300,path = "Plots/")
 
+print("End of numerical analysis")
 
 
 #### CRETE
-
+print("Begin Crete cave fauna analysis")
 
 caves_crete <- caves %>% filter(Region=="Kriti")
 
@@ -2926,3 +2933,5 @@ ggplot()+
 
 ggsave("crete_lithology_caves_subregion_barplot.jpeg", plot = last_plot(), device = "jpeg", dpi = 300,path = "Plots/") 
 
+print("End of Crete cave fauna analysis")
+print("End of script")
