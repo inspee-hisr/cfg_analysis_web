@@ -275,7 +275,7 @@ classification_all_and_endemic$Classification <- factor(classification_all_and_e
 species_ecological_classification_all_and_endemic <- ggplot()+
   geom_col(data = classification_all_and_endemic, aes(x=Classification, y= number_of_species, fill=Species_status,width=0.8), position = position_dodge(width = 0.8),show.legend = T)+
   geom_text(data = classification_all_and_endemic,aes(x =Classification,y= number_of_species, label=number_of_species,group=Species_status), position=position_dodge(width=0.9), vjust=-0.25,size=6)+
-  scale_y_continuous(breaks = seq(0,350,25),limits = c(0,350),expand = c(0.01,0.4))+
+  scale_y_continuous(breaks = seq(0,375,25),limits = c(0,375),expand = c(0.01,0.4))+
   scale_fill_manual(labels=c("All species","Species endemic to Greece"),values = c("lightgoldenrod2","lightpink1"),name="")+
   labs(x="Classification", y= "Number of species")+
   theme_bw()+
