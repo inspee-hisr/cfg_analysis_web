@@ -1005,7 +1005,7 @@ species_references_year_dist <- Census_references %>% group_by(Year) %>% summari
 
 ggplot()+
   geom_line(data=species_references_year_dist,aes(x=Year, y= publications_per_year),color="red",show.legend = F)+
-  scale_x_continuous(breaks = seq(1860,2020,10),limits = c(1860,2020))+
+  scale_x_continuous(breaks = seq(1860,2030,10),limits = c(1860,2025))+
   scale_y_continuous(breaks = seq(0,20,2), limits = c(0,20))+
   labs(x="Years",y="Number of new publications")+
   theme_bw()+
@@ -1018,8 +1018,8 @@ species_references_year_dist$Cumulative_publications <- cumsum(species_reference
 ggplot(data=species_references_year_dist)+
   geom_line(aes(x=Year, y= Cumulative_publications),color="mediumseagreen",show.legend = F)+
   #ggtitle("Class")+
-  scale_x_continuous(breaks = seq(1860,2020,10),limits = c(1860,2020))+
-  scale_y_continuous(breaks = seq(0,750,100), limits = c(0,750))+
+  scale_x_continuous(breaks = seq(1860,2030,10),limits = c(1860,2030))+
+  scale_y_continuous(breaks = seq(0,900,100), limits = c(0,900))+
   labs(x="Years",y="Cumulative publications")+
   theme_bw()+
   theme(panel.grid.minor = element_blank(), panel.grid.major = element_blank())
@@ -1033,13 +1033,25 @@ census_long_man_reference <- census_long_man %>% left_join(Census_references,by=
 
 census$species_epithet <- as.character(lapply(strsplit(as.character(census$Species), split=" "), "[", n=2))
 
-species_references_spreaded_arranged <- census_long_man_reference %>% ungroup() %>% dplyr::select(Species, ReferenceShort, Year) %>% group_by(Species,ReferenceShort, Year) %>% distinct(.) %>% arrange(.,Year) %>% ungroup() %>% mutate(Duplicates=duplicated(Species), species_epithet= as.character(lapply(strsplit(as.character(Species), split=" "), "[", n=2))) %>% filter(species_epithet!="sp.") %>% mutate(.,First_occurance=if_else(Duplicates=="FALSE",1,0)) %>% na.omit() %>% mutate(Cumulative_occurance= cumsum(First_occurance)) %>% mutate(Classification="All species") %>% dplyr::select(-c(Species,species_epithet,First_occurance)) %>% distinct(.)
+species_references_spreaded_arranged <- census_long_man_reference %>% 
+    ungroup() %>% 
+    dplyr::select(Species, ReferenceShort, Year) %>% 
+    group_by(Species,ReferenceShort, Year) %>% 
+    distinct(.) %>% arrange(.,Year) %>% ungroup() %>% 
+    mutate(Duplicates=duplicated(Species), 
+           species_epithet= as.character(lapply(strsplit(as.character(Species), split=" "), "[", n=2))) %>% 
+    filter(species_epithet!="sp.") %>% 
+    mutate(.,First_occurance=if_else(Duplicates=="FALSE",1,0)) %>% 
+    na.omit() %>% 
+    mutate(Cumulative_occurance= cumsum(First_occurance)) %>% 
+    mutate(Classification="All species") %>% 
+    dplyr::select(-c(Species,species_epithet,First_occurance)) %>% distinct(.)
 
 ggplot()+
   geom_line(data=species_references_spreaded_arranged,aes(x=Year, y= Cumulative_occurance),color="violetred1",show.legend = F)+
   #ggtitle("Class")+
-  scale_x_continuous(breaks = seq(1860,2020,10),limits = c(1860,2020))+
-  scale_y_continuous(breaks = seq(0,950,100), limits = c(0,950))+
+  scale_x_continuous(breaks = seq(1860,2030,10),limits = c(1860,2030))+
+  scale_y_continuous(breaks = seq(0,1000,100), limits = c(0,1000))+
   labs(x="Years",y="Cumulative species in Greek caves")+
   theme_bw()+
   theme(panel.grid.minor = element_blank(), panel.grid.major = element_blank())
@@ -1047,23 +1059,68 @@ ggplot()+
 ggsave("species_occurrence_accumulation.jpeg", plot = last_plot(), device = "jpeg", dpi = 300,path = "Plots/")
 
 
-qq <- species %>% filter(Distribution=="Endemic to Greece")
+endemic_cumulative_species <- census_long_man_reference %>% 
+    left_join(species,by=c("Species"="Species_Full_Name")) %>% 
+    dplyr::select(Species,Distribution, ReferenceShort, Year) %>% 
+    group_by(Species,Distribution,ReferenceShort, Year) %>% 
+    distinct(.) %>% arrange(.,Year) %>% ungroup() %>% 
+    mutate(Duplicates=duplicated(Species), 
+           species_epithet= as.character(lapply(strsplit(as.character(Species), split=" "), "[", n=2))) %>% 
+    filter(species_epithet!="sp.") %>% 
+    mutate(.,First_occurance=if_else(Duplicates=="FALSE",1,0)) %>% na.omit() %>% 
+    filter(First_occurance==1) %>% group_by(Year,Distribution) %>% 
+    summarise(Occurance_species_year= n()) %>% group_by(Distribution) %>% 
+    mutate(Cumulative_occurance= cumsum(Occurance_species_year)) %>% 
+    filter(Distribution=="Endemic to Greece") %>% 
+    mutate(Classification="Endemic species to Greece") %>% 
+    dplyr::select(-Occurance_species_year,-Distribution)
 
-
-endemic_cumulative_species <- census_long_man_reference %>% left_join(species,by=c("Species"="Species_Full_Name")) %>% dplyr::select(Species,Distribution, ReferenceShort, Year) %>% group_by(Species,Distribution,ReferenceShort, Year) %>% distinct(.) %>% arrange(.,Year) %>% ungroup() %>% mutate(Duplicates=duplicated(Species), species_epithet= as.character(lapply(strsplit(as.character(Species), split=" "), "[", n=2))) %>% filter(species_epithet!="sp.") %>% mutate(.,First_occurance=if_else(Duplicates=="FALSE",1,0)) %>% na.omit() %>% filter(First_occurance==1) %>% group_by(Year,Distribution) %>% summarise(Occurance_species_year= n()) %>% group_by(Distribution) %>% mutate(Cumulative_occurance= cumsum(Occurance_species_year)) %>% filter(Distribution=="Endemic to Greece") %>% mutate(Classification="Endemic species to Greece") %>% dplyr::select(-Occurance_species_year,-Distribution)
-
-census_long_man_reference_all_species_classification <- census_long_man_reference %>% left_join(species,by=c("Species"="Species_Full_Name")) %>% dplyr::select(Species,Classification, ReferenceShort, Year) %>% group_by(Species,Classification,ReferenceShort, Year) %>% distinct(.) %>% arrange(.,Year) %>% ungroup() %>% mutate(Duplicates=duplicated(Species), species_epithet= as.character(lapply(strsplit(as.character(Species), split=" "), "[", n=2))) %>% filter(species_epithet!="sp.") %>% mutate(.,First_occurance=if_else(Duplicates=="FALSE",1,0)) %>% na.omit() %>% filter(First_occurance==1) %>% group_by(Year,Classification) %>% summarise(Occurance_species_year= n()) %>% group_by(Classification) %>% mutate(Cumulative_occurance= cumsum(Occurance_species_year)) %>% dplyr::select(-Occurance_species_year) %>% bind_rows(species_references_spreaded_arranged) %>% filter(Classification %in% c("Troglobiont","Troglophile","All species")) %>% bind_rows(endemic_cumulative_species)
-
+census_long_man_reference_all_species_classification <- census_long_man_reference %>% 
+    left_join(species,by=c("Species"="Species_Full_Name")) %>% 
+    dplyr::select(Species,Classification, ReferenceShort, Year) %>% 
+    group_by(Species,Classification,ReferenceShort, Year) %>% 
+    distinct(.) %>% ungroup() %>% arrange(.,Year) %>% 
+    mutate(Duplicates=duplicated(Species), 
+           species_epithet= as.character(lapply(strsplit(as.character(Species), split=" "), "[", n=2))) %>% 
+    filter(species_epithet!="sp.") %>% 
+    mutate(.,First_occurance=if_else(Duplicates=="FALSE",1,0)) %>% 
+    na.omit() %>% filter(First_occurance==1) %>% 
+    mutate(Classification=gsub("Troglobiont|Stygobiont", "Troglobiont + Stygobiont",Classification)) %>%
+    mutate(Classification=gsub("Troglophile|Stygophile", "Troglophile + Stygophile",Classification)) %>%
+    group_by(Year,Classification) %>%
+    summarise(Occurance_species_year= n()) %>% ungroup() %>%
+    group_by(Classification) %>% 
+    mutate(Cumulative_occurance= cumsum(Occurance_species_year)) %>% 
+    dplyr::select(-Occurance_species_year) %>% 
+    bind_rows(species_references_spreaded_arranged) %>% 
+    filter(Classification %in% c("Troglobiont + Stygobiont","Troglophile + Stygophile","All species")) %>%
+    bind_rows(endemic_cumulative_species) %>% ungroup()
 
 species_occurrence_accumulation_classification_plot <- ggplot()+
-  geom_line(data=census_long_man_reference_all_species_classification,aes(x=Year, y= Cumulative_occurance,color=Classification),size=1,show.legend = T)+
+  geom_line(data=census_long_man_reference_all_species_classification,
+            aes(x=Year, y= Cumulative_occurance,color=Classification),
+            size=1,show.legend = T)+
   #ggtitle("Class")+
   scale_x_continuous(breaks = seq(1860,2030,10),limits = c(1860,2030),expand=c(0.015,0))+
-  scale_y_continuous(breaks = seq(0,950,100), limits = c(0,913),expand = c(0.01,0))+
-  scale_color_manual(values =c("Endemic species to Greece"="lightcoral","Troglophile"="paleturquoise","Troglobiont"="darkolivegreen3","All species"="deepskyblue"))+
+  scale_y_continuous(breaks = seq(0,1000,100), limits = c(0,1000),expand = c(0.01,0))+
+  scale_color_manual(values =c("Endemic species to Greece"="lightcoral",
+                               "Troglophile + Stygophile"="lightgoldenrod2",
+                               "Troglobiont + Stygobiont"="darkolivegreen3",
+                               "All species"="deepskyblue"))+
   labs(x="Years",y="Cumulative number of species")+
   theme_bw()+
-  theme(panel.grid.minor = element_blank(), panel.grid.major = element_blank(),legend.text = element_text(size = 18),axis.text.y=element_text(margin = margin(t = 0, r = 5, b = 0, l = 15,unit = "pt"),size = 18),axis.text.x = element_text(margin = margin(t = 5, r = 0, b = 15, l = 0,unit = "pt"),size = 18),axis.title = element_text(size=22),panel.border = element_blank(),axis.line.x = element_line(colour = 'black', size = 0.3), axis.line.y = element_line(colour = 'black', size = 0.3),legend.position = c(0.13,0.87), legend.key.size = unit(1.5, "cm"), legend.title = element_blank())
+  theme(panel.grid.minor = element_blank(), 
+        panel.grid.major = element_blank(),
+        legend.text = element_text(size = 18),
+        axis.text.y=element_text(margin = margin(t = 0, r = 5, b = 0, l = 15,unit = "pt"),size = 18),
+        axis.text.x = element_text(margin = margin(t = 5, r = 0, b = 15, l = 0,unit = "pt"),size = 18),
+        axis.title = element_text(size=22),
+        panel.border = element_blank(),
+        axis.line.x = element_line(colour = 'black', size = 0.3), 
+        axis.line.y = element_line(colour = 'black', size = 0.3),
+        legend.position = c(0.13,0.87), 
+        legend.key.size = unit(1.5, "cm"), 
+        legend.title = element_blank())
 
 ggsave("species_occurrence_accumulation_classification.png", plot = species_occurrence_accumulation_classification_plot, device = "png",width = 20,height = 11.25,units = "in", dpi = 100,path = "Website_plots/")
 
