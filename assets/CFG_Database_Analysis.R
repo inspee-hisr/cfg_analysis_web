@@ -27,6 +27,7 @@ library(maptools)
 library(Rcpp)
 library(sp)
 library(raster) ##Load the Raster Library
+library(mapproj) ## for coord map plotting
 
 # Species statistics
 
