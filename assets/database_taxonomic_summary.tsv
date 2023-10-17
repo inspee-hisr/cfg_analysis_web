@@ -1,8 +1,8 @@
 TAXA	Orders	Families	Genera	Species
 Phylum Arthropoda	 	 	 	 
-Arachnida	12	58	122	264
+Arachnida	12	59	127	271
 Amblypygi	 	1	1	1
-Araneae	 	26	71	146
+Araneae	 	27	76	153
 Ixodida	 	1	2	3
 Mesostigmata	 	2	4	4
 Opiliones	 	4	13	17
@@ -45,10 +45,10 @@ Psocoptera	 	4	4	5
 Siphonaptera	 	1	1	1
 Trichoptera	 	2	5	10
 Zygentoma	 	2	2	2
-Malacostraca	4	23	40	93
+Malacostraca	4	23	40	92
 Amphipoda	 	4	6	9
 Decapoda	 	1	2	2
-Isopoda	 	17	31	81
+Isopoda	 	17	31	80
 Thermosbaenacea	 	1	1	1
 Maxillopoda	1	1	1	1
 Calanoida	 	1	1	1
@@ -65,9 +65,9 @@ Caudata	 	1	1	1
 Aves	2	2	2	2
 Passeriformes	 	1	1	1
 Strigiformes	 	1	1	1
-Mammalia	3	7	16	34
+Mammalia	3	8	16	35
 Carnivora	 	2	3	3
-Chiroptera	 	3	10	28
+Chiroptera	 	4	10	29
 Rodentia	 	2	3	3
 Phylum Annelida	 	 	 	 
 Clitellata	3	4	13	17
@@ -86,8 +86,9 @@ Rhabditophora	2	2	2	2
 Lecithoepitheliata	 	1	1	1
 Tricladida	 	1	1	1
 Phylum Mollusca	 	 	 	 
-Gastropoda	2	15	32	65
+Gastropoda	3	16	33	67
 Littorinimorpha	 	2	2	2
-Stylommatophora	 	13	30	63
+Pulmonata	 	1	1	1
+Stylommatophora	 	13	30	64
  	 	 	 	 
-TOTAL	64	195	448	891
+TOTAL	65	198	454	900
