@@ -22,12 +22,10 @@ library(rgdal)
 #library(GISTools)
 #library(leaflet)
 #library(rgeos)
-library(maptools)
-#library(tmap)
-library(Rcpp)
-library(sp)
+#library(maptools)
+library(sf)
+#library(Rcpp)
 library(raster) ##Load the Raster Library
-library(mapproj) ## for coord map plotting
 
 # Species statistics
 
@@ -1195,12 +1193,15 @@ Caves_Database_kml_to_txt$Longitude <- as.numeric(Caves_Database_kml_to_txt$Long
 
 Caves_Database_kml_to_txt$ID <- as.character(seq(1:nrow(Caves_Database_kml_to_txt)))
 
-Caves_Database_kml_to_txt_shapefile_wgs84 <- Caves_Database_kml_to_txt
+Caves_Database_kml_to_txt_shapefile_wgs84 <- Caves_Database_kml_to_txt %>% 
+    st_as_sf(coords=c("Longitude", "Latitude"), crs="WGS84")
 
-coordinates(Caves_Database_kml_to_txt_shapefile_wgs84)<-~Longitude+Latitude
-proj4string(Caves_Database_kml_to_txt_shapefile_wgs84) <- CRS("+proj=longlat +datum=WGS84")# CRS("+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs")  # this is WGS84
 
-Caves_Database_kml_to_txt_shapefile <- spTransform(Caves_Database_kml_to_txt_shapefile_wgs84, CRS( "+proj=longlat +datum=GGRS87 +no_defs"))
+#coordinates(Caves_Database_kml_to_txt_shapefile_wgs84)<-~Longitude+Latitude
+#proj4string(Caves_Database_kml_to_txt_shapefile_wgs84) <- CRS("+proj=longlat +datum=WGS84")# CRS("+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs")  # this is WGS84
+
+Caves_Database_kml_to_txt_shapefile <- Caves_Database_kml_to_txt_shapefile_wgs84 %>% 
+    st_transform( "+proj=longlat +datum=GGRS87 +no_defs")
 
 species_occurencies_unique_caves_without <- caves[which((is.na(caves$Latitude))),]
 
@@ -1213,21 +1214,21 @@ species_occurencies_unique_caves_without <- caves[which((is.na(caves$Latitude)))
 # Municipalities shape file
 
 
-municipalities_shape_file_original <- rgdal::readOGR("Shapefiles/municipalities_shape_file/municipalities_Kallikratis_plan_Greece.shp",verbose=TRUE)
+municipalities_shape_file_original <- st_read("Shapefiles/municipalities_shape_file/municipalities_Kallikratis_plan_Greece.shp")
 
-municipalities_shape_file <- spTransform(municipalities_shape_file_original, CRS("+proj=longlat +datum=GGRS87 +no_defs"))
+municipalities_shape_file <- municipalities_shape_file_original %>% st_transform("+proj=longlat +datum=GGRS87 +no_defs")
 
 #proj4string(municipalities_shape_file) <- CRS("+proj=longlat +datum=WGS84")# CRS("+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs")  # this is WGS84
 
 municipalities_greece_long_names_eng <- readxl::read_xlsx("Shapefiles/municipalities_shape_file/names_municipalities_gr_eng.xlsx",col_names = T)
 municipalities_greece_long_names_eng$KWD_YPES <- as.character(municipalities_greece_long_names_eng$KWD_YPES)
 
-municipalities_shape_file@data <- municipalities_shape_file@data %>% left_join(., municipalities_greece_long_names_eng, by=c("KWD_YPES"="KWD_YPES"))
-rownames(municipalities_shape_file@data) <- as.character(seq(1:nrow(municipalities_shape_file@data)))
+municipalities_shape_file <- municipalities_shape_file %>% left_join(., municipalities_greece_long_names_eng, by=c("KWD_YPES"="KWD_YPES"))
+rownames(municipalities_shape_file) <- as.character(seq(1:nrow(municipalities_shape_file)))
 
 
 
-over_municipality <- sp::over( x = Caves_Database_kml_to_txt_shapefile , y = municipalities_shape_file , fn = NULL)
+over_municipality <- st_intersection(Caves_Database_kml_to_txt_shapefile, municipalities_shape_file)
 
 caves_in_municipa <- over_municipality
 
@@ -1263,7 +1264,7 @@ natura2000_new_shapefile_v30  <- rgdal::readOGR("Shapefiles/GR_Natura2000_v30/gr
 #,p4s = "+proj=longlat +datum=WGS84 +ellps=GRS80 +units=m +no_defs"
 natura2000_new_shapefile_v30_wgs84 <- spTransform(natura2000_new_shapefile_v30, CRS("+proj=longlat +datum=WGS84")) #+proj=longlat +datum=GGRS87 +no_defs
 
-names_natura2000_new_shapefile_v30 <- natura2000_new_shapefile_v30@data %>% mutate(id=as.character(seq(from=0,to=(nrow(.)-1))))
+names_natura2000_new_shapefile_v30 <- natura2000_new_shapefile_v30 %>% mutate(id=as.character(seq(from=0,to=(nrow(.)-1))))
 
 natura2000_new_shapefile_v30_dataframe <- broom::tidy(natura2000_new_shapefile_v30_wgs84) %>% left_join(., names_natura2000_new_shapefile_v30, by=c("id"="id"))
 
@@ -1272,42 +1273,48 @@ over_natura_NEW_v30 <- over( x = Caves_Database_kml_to_txt_shapefile_wgs84 , y =
 over_natura_NEW_v30_d <-Caves_Database_kml_to_txt %>% left_join(bind_rows(over_natura_NEW_v30,.id = "ID"),by=c("ID"="ID"))
 
 ## Only the new parts
-natura2000_NEW_shapefile <- maptools::readShapePoly("Shapefiles/Natura2000_2017_NEW_shp/Kaloust/Nees_Natura", verbose = TRUE)
+natura2000_NEW_shapefile <- sf::st_read("Shapefiles/Natura2000_2017_NEW_shp/Kaloust/Nees_Natura.shp")
 
-natura2000_NEW_shapefile_INFO <- maptools::readShapePoly("Shapefiles/Natura2000_2017_NEW_shp/NEES_FINAL_V10", verbose = TRUE)
+natura2000_NEW_shapefile_INFO <- sf::st_read(("Shapefiles/Natura2000_2017_NEW_shp/NEES_FINAL_V10.shp")
 
-natura2000_NEW_shapefile_INFO_df <- natura2000_NEW_shapefile_INFO@data %>% mutate(id=as.character(seq(from=0,to=(nrow(.)-1))))
+natura2000_NEW_shapefile_INFO_df <- natura2000_NEW_shapefile_INFO %>% mutate(id=as.character(seq(from=0,to=(nrow(.)-1))))
 
-natura2000_NEW_shapefile@data <-  natura2000_NEW_shapefile@data %>% mutate(id=as.character(seq(from=0,to=(nrow(.)-1)))) %>% left_join(natura2000_NEW_shapefile_INFO_df, by=c("id"="id")) %>% dplyr::select(-c(descriptio,timestamp,begin,end,altitudeMo,tessellate,extrude,visibility,drawOrder,icon))
+natura2000_NEW_shapefile <-  natura2000_NEW_shapefile %>% mutate(id=as.character(seq(from=0,to=(nrow(.)-1)))) %>% left_join(natura2000_NEW_shapefile_INFO_df, by=c("id"="id")) %>% dplyr::select(-c(descriptio,timestamp,begin,end,altitudeMo,tessellate,extrude,visibility,drawOrder,icon))
 
 proj4string(natura2000_NEW_shapefile) <- CRS("+proj=longlat +datum=WGS84")# CRS("+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs") # this is WGS84
 
 
 # shapefiles to dataframes for plotting
 ## New Natura
-natura2000_NEW_shapefile_names <- natura2000_NEW_shapefile@data %>% mutate(id=as.character(seq(from=0,to=(nrow(.)-1))))
+#natura2000_NEW_shapefile_names <- natura2000_NEW_shapefile@data %>% mutate(id=as.character(seq(from=0,to=(nrow(.)-1))))
 
-natura2000_NEW_shapefile_dataframe <- broom::tidy(natura2000_NEW_shapefile) %>% left_join(., natura2000_NEW_shapefile_names, by=c("id"="id"))
+#natura2000_NEW_shapefile_dataframe <- broom::tidy(natura2000_NEW_shapefile) %>% left_join(., natura2000_NEW_shapefile_names, by=c("id"="id"))
 
 ##### Natura 2000
-natura2000shapefile <- maptools::readShapePoly("Shapefiles/natura2000shapefile/natura2000shapefile",verbose=TRUE)
+natura2000shapefile <-  sf::st_read("Shapefiles/natura2000shapefile/natura2000shapefile.shp")
 
 proj4string(natura2000shapefile) <- CRS("+proj=longlat +datum=WGS84") #CRS("+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs")  # this is WGS84
 
-natura2000shapefile_data <- natura2000shapefile@data %>% dplyr::select(CODE,NAME_LATIN)
+natura2000shapefile_data <- natura2000shapefile %>% dplyr::select(CODE,NAME_LATIN)
 ### Katafygia agrias zois
 #katafygia_agrias_zwhs <- maptools::readShapePoly("katafygia_agrias_zwhs/katafygia_agrias_zwhs",verbose=TRUE)
 
 #proj4string(katafygia_agrias_zwhs) <- CRS("+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs")  # this is WGS84
 
 ### Natura 2000 TIDY
-names_natura2000shapefile <- natura2000shapefile@data %>% mutate(id=as.character(seq(from=0,to=(nrow(.)-1)))) %>% mutate(NAME_LATIN_lower_letters=capwords(tolower(NAME_LATIN))) %>% mutate(SITETYPE_NATURA=ifelse(is.na(SITETYPE), NA_character_, ifelse(SITETYPE=="SPA","Special Protection Area", ifelse(SITETYPE=="SCI","Special Area of Conservation ", "Special Protection Area - Special Area of Conservation"))))
+names_natura2000shapefile <- natura2000shapefile %>%
+    mutate(id=as.character(seq(from=0,to=(nrow(.)-1)))) %>%
+    mutate(NAME_LATIN_lower_letters=capwords(tolower(NAME_LATIN))) %>%
+    mutate(SITETYPE_NATURA=ifelse(is.na(SITETYPE), NA_character_,
+                                  ifelse(SITETYPE=="SPA","Special Protection Area",
+                                         ifelse(SITETYPE=="SCI","Special Area of Conservation ",
+                                                "Special Protection Area - Special Area of Conservation"))))
 
-natura2000shapefile_dataframe <- broom::tidy(natura2000shapefile) %>% left_join(., names_natura2000shapefile, by=c("id"="id"))
+natura2000shapefile_dataframe <- natura2000shapefile %>% left_join(., names_natura2000shapefile, by=c("id"="id"))
 
 
 ####
-katafygia_agrias_zwhs <- maptools::readShapePoly("Shapefiles/KAZ_data/KAZ_data",verbose=TRUE)
+katafygia_agrias_zwhs <-  sf::st_read("Shapefiles/KAZ_data/KAZ_data.shp")
 
 proj4string(katafygia_agrias_zwhs) <- CRS("+proj=longlat +datum=WGS84")# CRS("+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs")  # this is WGS84
 
@@ -1318,12 +1325,12 @@ KAZ_data_KODE <- read_csv("Shapefiles/KAZ_data/KAZ_data.csv",col_names = T) %>% 
 ### katafygia_agrias_zwhs TIDY
 #katafygia_agrias_zwhs_names$id <- as.character(seq(from=0,to=(nrow(katafygia_agrias_zwhs_names)-1)))
 
-katafygia_agrias_zwhs_dataframe <- broom::tidy(katafygia_agrias_zwhs)
+katafygia_agrias_zwhs_dataframe <- katafygia_agrias_zwhs
 #%>% left_join(., katafygia_agrias_zwhs_names, by=c("id"="id"))
 
 
 ### New Natura Over
-over_NEW_natura <- sp::over( x = Caves_Database_kml_to_txt_shapefile_wgs84, y = natura2000_NEW_shapefile , fn = NULL)
+over_NEW_natura <- st_intersection(Caves_Database_kml_to_txt_shapefile_wgs84, natura2000_NEW_shapefile)
 
 caves_in_over_NEW_natura <- over_NEW_natura %>% mutate(ID=as.character(seq(1:nrow(over_NEW_natura)))) %>% filter(SITE_TYPE=="SCI") %>% mutate(TYPE=gsub(pattern = "TROP",replacement = "Modified:",x =TYPE),Name_New_NATURA2=gsub(pattern = "TROP ",replacement = "",x = Name)) %>% left_join(Caves_Database_kml_to_txt,by=c("ID"="ID")) %>% dplyr::select(Cave_ID,TYPE,SITE_TYPE,Name_New_NATURA2) %>% left_join(natura2000shapefile_data, by=c("Name_New_NATURA2"="CODE")) %>% dplyr::select(-c(Name_New_NATURA2))
 
@@ -1331,7 +1338,7 @@ colnames(caves_in_over_NEW_natura) <- c("Cave_ID","CODE_NEW_NATURA","SITETYPE_NE
 
 ### over NATURA
 
-over_natura <- sp::over( x = Caves_Database_kml_to_txt_shapefile_wgs84 , y = natura2000shapefile , fn = NULL)
+over_natura <- st_intersection(Caves_Database_kml_to_txt_shapefile_wgs84 , natura2000shapefile)
 
 # create file with the old and new natura2000 areas combined
 
@@ -1341,7 +1348,7 @@ colnames(caves_in_over_natura) <- c("Cave_ID","CODE_NATURA","SITETYPE_NATURA", "
 
 ### over Katafygia agrias zwis
 
-over_katafygia_agrias_zwhs <- sp::over( x = Caves_Database_kml_to_txt_shapefile_wgs84 , y = katafygia_agrias_zwhs , fn = NULL)
+over_katafygia_agrias_zwhs <- st_intersection(Caves_Database_kml_to_txt_shapefile_wgs84 , katafygia_agrias_zwhs)
 
 over_katafygia_agrias_zwhs$ID_cave <- as.character(seq(1:nrow(over_katafygia_agrias_zwhs)))
 
@@ -1351,7 +1358,23 @@ caves_in_over_katafygia_agrias_zwhs <- Caves_Database_kml_to_txt %>% left_join(o
 
 
 #  left_join(.,over_natura_NEW_v30_d, by=c("Cave_ID"="Cave_ID")) %>% 
-caves_protection <- caves %>% dplyr::select(Cave_ID) %>% left_join(.,caves_in_over_natura, by=c("Cave_ID"="Cave_ID")) %>% left_join(.,caves_in_over_NEW_natura, by=c("Cave_ID"="Cave_ID")) %>% left_join(., caves_in_over_katafygia_agrias_zwhs, by=c("Cave_ID"="Cave_ID")) %>% mutate(NAME_LATIN_NATURA=gsub("NANA",NA_character_,gsub(" Kai "," and ",capwords(tolower(NAME_LATIN_NATURA))))) %>% mutate(NAME_LATIN_NEW_NATURA=gsub("NANA",NA_character_,gsub(" Kai "," and ",capwords(tolower(NAME_LATIN_NEW_NATURA))))) %>% mutate(SITETYPE_NATURA_ALL=ifelse(is.na(SITETYPE_NATURA), NA_character_, ifelse(SITETYPE_NATURA=="SPA","Special Protection Area", ifelse(SITETYPE_NATURA=="SCI","Special Area of Conservation", "Special Protection Area - Special Area of Conservation"))),SITETYPE_NEW_NATURA_ALL=ifelse(is.na(SITETYPE_NEW_NATURA), NA_character_, ifelse(SITETYPE_NEW_NATURA=="SPA","Special Protection Area", ifelse(SITETYPE_NEW_NATURA=="SCI","Special Area of Conservation", "Special Protection Area - Special Area of Conservation"))))
+caves_protection <- caves %>%
+    dplyr::select(Cave_ID) %>%
+    left_join(.,caves_in_over_natura,
+              by=c("Cave_ID"="Cave_ID")) %>%
+    left_join(.,caves_in_over_NEW_natura,
+              by=c("Cave_ID"="Cave_ID")) %>%
+    left_join(., caves_in_over_katafygia_agrias_zwhs,
+              by=c("Cave_ID"="Cave_ID")) %>%
+    mutate(NAME_LATIN_NATURA=gsub("NANA",NA_character_,
+                                  gsub(" Kai "," and ",capwords(tolower(NAME_LATIN_NATURA))))) %>%
+    mutate(NAME_LATIN_NEW_NATURA=gsub("NANA",NA_character_,gsub(" Kai "," and ",capwords(tolower(NAME_LATIN_NEW_NATURA))))) %>%
+    mutate(SITETYPE_NATURA_ALL=ifelse(is.na(SITETYPE_NATURA), NA_character_,
+                                      ifelse(SITETYPE_NATURA=="SPA","Special Protection Area",
+                                             ifelse(SITETYPE_NATURA=="SCI","Special Area of Conservation", "Special Protection Area - Special Area of Conservation"))),
+           SITETYPE_NEW_NATURA_ALL=ifelse(is.na(SITETYPE_NEW_NATURA), NA_character_,
+                                          ifelse(SITETYPE_NEW_NATURA=="SPA","Special Protection Area",
+                                                 ifelse(SITETYPE_NEW_NATURA=="SCI","Special Area of Conservation", "Special Protection Area - Special Area of Conservation"))))
 
 ## some names in () had lower case first letters so i changed them manually.
 #write_delim(caves_protection,path = "caves_protection.txt",delim = "\t",col_names = T)
@@ -1416,14 +1439,14 @@ species_Region$regions <- greece_regions
 
 # https://www.r-bloggers.com/using-r-working-with-geospatial-data-and-ggplot2/
 
-greece_level_2@data$id <- rownames(greece_level_2@data)
+greece_level_2$id <- rownames(greece_level_2)
 
 greece_level_2 <- spTransform(greece_level_2, CRS("+proj=longlat +datum=WGS84"))
 
 greece_level_2_fortify <- broom::tidy(greece_level_2)
 #greece_level_2_fortify <- fortify(greece_level_2, region = "id")
 
-greece_level_2_dataframe <- merge(greece_level_2_fortify, greece_level_2@data, by = "id")
+greece_level_2_dataframe <- merge(greece_level_2_fortify, greece_level_2, by = "id")
 
 greece_level_2_dataframe <- greece_level_2_dataframe %>% left_join(., caves_Region, by=c("NAME_2"="regions")) %>% dplyr::select(-Region) %>% left_join(., species_Region, by=c("NAME_2"="regions"))
 
@@ -1436,7 +1459,7 @@ cnames_species <- aggregate(cbind(long, lat) ~ NAME_2, data=greece_level_2_dataf
 
 
 gg_region_caves <- ggplot() +
-  geom_polygon(data = greece_level_2_dataframe,aes(x=long, y=lat,group = group,fill = number_of_caves),color="white",lwd=0.2) +
+  geom_df(data = greece_level_2,aes(x=long, y=lat,group = group,fill = number_of_caves),color="white",lwd=0.2) +
   #geom_path(size= 0.2,color = "white") +
   #coord_equal() +
   #geom_text(data=cnames,aes(label = number_of_caves, x = long, y = lat)) + 
@@ -1612,9 +1635,9 @@ grid_10k_shapefile_wgs84 <- spTransform(grid_10k_shapefile, CRS("+proj=longlat +
 grid_10k_shapefile_dataframe <- broom::tidy(grid_10k_shapefile_wgs84)
 
 
-grid_10k_shapefile_wgs84_data <- grid_10k_shapefile_wgs84@data %>% mutate(id=as.character(seq(from=0, to=(nrow(grid_10k_shapefile_wgs84@data)-1)))) %>% left_join(grid_10k_shapefile_dataframe,by=c("id"="id")) %>% dplyr::select(-c(EofOrigin,NofOrigin))
+grid_10k_shapefile_wgs84_data <- grid_10k_shapefile_wgs84 %>% mutate(id=as.character(seq(from=0, to=(nrow(grid_10k_shapefile_wgs84)-1)))) %>% left_join(grid_10k_shapefile_dataframe,by=c("id"="id")) %>% dplyr::select(-c(EofOrigin,NofOrigin))
 
-dim(grid_10k_shapefile_wgs84@data)
+dim(grid_10k_shapefile_wgs84)
 length(unique(grid_10k_shapefile_dataframe$id))
  
 
