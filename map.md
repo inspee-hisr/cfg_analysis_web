@@ -24,14 +24,14 @@ layout: page
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
-    var map = L.map('map').setView([38.7128, 35.0060], 5);
+    var map = L.map('map').setView([37.9286, 24.7956], 5);
 
-    // ✅ Add OpenStreetMap layer
+    // Add OpenStreetMap layer
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '&copy; OpenStreetMap contributors'
     }).addTo(map);
 
-    // ✅ Load external GeoJSON file
+    // Load external GeoJSON file
     fetch('../assets/CFG_map/caves.geojson')
         .then(response => response.json())
         .then(data => {
@@ -48,7 +48,7 @@ layout: page
                 }
             }).addTo(map);
         })
-        .catch(error => console.log("Error loading GeoJSON: ", error));
+        .catch(error => console.log("Error loading GeoJSON points: ", error));
 </script>
 
 </body>
