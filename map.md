@@ -38,7 +38,7 @@ layout: page
             L.geoJSON(data, {
                 onEachFeature: function (feature, layer) {
                     if (feature.properties) {
-                        let popupContent = `<b>${feature.properties.Cave_name}</b><br>
+                        let popupContent = `<b>${feature.properties.Cave_Name}</b><br>
                                             <b>Type:</b> ${feature.properties.Cave_Type}<br>
                                             <b>Protection:</b> ${feature.properties.Protection_Status}<br>
                                             <b>Description:</b> ${feature.properties.Cave_Description}`;
