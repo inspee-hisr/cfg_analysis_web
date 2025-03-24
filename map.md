@@ -5,46 +5,39 @@ layout: page
 
 ---
 ## Map with Multiple Layers
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Leaflet Map</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <style>
+        #map {
+            height: 500px;
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
 
-<div id="map" style="height: 500px; width: 100%;"></div>
+    <h1>Interactive Map</h1>
+    <div id="map"></div>
 
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<script>
-    var map = L.map('map').setView([40.7128, -74.0060], 5);
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        var map = L.map('map').setView([40.7128, -74.0060], 5);
 
-    // Define base layers
-    var osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '&copy; OpenStreetMap' });
-    var satellite = L.tileLayer('https://{s}.google.com/vt/lyrs=s&x={x}&y={y}&z={z}', {
-        attribution: '© Google',
-        subdomains: ['mt0', 'mt1', 'mt2', 'mt3']
-    });
+        // ✅ Correct OpenStreetMap tile layer
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; OpenStreetMap contributors'
+        }).addTo(map);
 
-    osm.addTo(map); // Default layer
+        // ✅ Adding a test marker
+        L.marker([40.7128, -74.0060]).addTo(map)
+            .bindPopup("New York City")
+            .openPopup();
+    </script>
 
-    // Load external point data
-    var pointsLayer = new L.LayerGroup();
-    fetch('assets/CFG_map/points.geojson')
-        .then(response => response.json())
-        .then(data => {
-            L.geoJSON(data, {
-                onEachFeature: function(feature, layer) {
-                    if (feature.properties) {
-                        layer.bindPopup("<b>" + feature.properties.name + "</b><br>" + feature.properties.description);
-                    }
-                }
-            }).addTo(pointsLayer);
-        });
-
-    // Add a polygon layer (example)
-    var polygonLayer = L.geoJSON({
-        "type": "Feature",
-        "geometry": { "type": "Polygon", "coordinates": [[[-75, 40], [-75, 42], [-72, 42], [-72, 40], [-75, 40]]] },
-        "properties": { "name": "Example Area" }
-    }).bindPopup("This is an example polygon.");
-
-    // Layer control
-    L.control.layers(
-        { "OpenStreetMap": osm, "Satellite": satellite },
-        { "Points": pointsLayer, "Polygon": polygonLayer }
-    ).addTo(map);
-</script>
+</body>
+</html>
