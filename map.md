@@ -33,13 +33,13 @@ layout: page
     }).addTo(map);
 
     // ✅ Load external GeoJSON file
-    fetch('../assets/CFG_map/points.geojson')
+    fetch('../assets/CFG_map/caves.geojson')
         .then(response => response.json())
         .then(data => {
             L.geoJSON(data, {
                 onEachFeature: function (feature, layer) {
                     if (feature.properties) {
-                        layer.bindPopup("<b>" + feature.properties.name + "</b><br>" + feature.properties.description);
+                        layer.bindPopup("<b>" + feature.properties.Cave_Name + "</b><br>" + feature.properties.Cave_Description);
                     }
                 }
             }).addTo(map);
