@@ -24,7 +24,7 @@ layout: page
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
-    var map = L.map('map').setView([40.7128, 34.0060], 5);
+    var map = L.map('map').setView([38.7128, 35.0060], 5);
 
     // ✅ Add OpenStreetMap layer
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -38,7 +38,12 @@ layout: page
             L.geoJSON(data, {
                 onEachFeature: function (feature, layer) {
                     if (feature.properties) {
-                        layer.bindPopup("<b>" + feature.properties.Cave_Name + "</b><br>" + feature.properties.Cave_Description);
+                        let popupContent = `<b>${feature.properties.Cave_name}</b><br>
+                                            <b>Type:</b> ${feature.properties.Cave_Type}<br>
+                                            <b>Protection:</b> ${feature.properties.Protection_Status}<br>
+                                            <b>Description:</b> ${feature.properties.Cave_Description}`;
+
+                        layer.bindPopup(popupContent);
                     }
                 }
             }).addTo(map);
