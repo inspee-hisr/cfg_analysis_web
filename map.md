@@ -33,7 +33,7 @@ layout: page
     }).addTo(map);
 
     // ✅ Load external GeoJSON file
-    fetch('assets/CFG_map/points.geojson')
+    fetch('../assets/CFG_map/points.geojson')
         .then(response => response.json())
         .then(data => {
             L.geoJSON(data, {
