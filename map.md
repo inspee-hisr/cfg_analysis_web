@@ -4,8 +4,7 @@ excerpt: "This map was created using Shiny application"
 layout: page
 
 ---
-## Map with Multiple Layers
-<!DOCTYPE html>
+
 <html lang="en">
 <head>
     <meta charset="UTF-8">
