@@ -1,6 +1,6 @@
 ---
-title: Map
-excerpt: "This map was created using Shiny application"
+title: Interactive Map
+excerpt: "This map was created using Leaflet js application"
 layout: page
 
 ---
@@ -20,7 +20,6 @@ layout: page
 </head>
 <body>
 
-    <h1>Interactive Map</h1>
     <div id="map"></div>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
