@@ -18,6 +18,3 @@ layout: page
         .bindPopup("Hello! This is a Leaflet map.")
         .openPopup();
 </script>
-#<div class="container"> 
-#  <iframe src='https://savvas-paragkamian.shinyapps.io/Spatial_caves_CFG/'></iframe>
-#</div>
