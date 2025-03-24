@@ -23,20 +23,29 @@ layout: page
     <h1>Interactive Map</h1>
     <div id="map"></div>
 
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <script>
-        var map = L.map('map').setView([40.7128, -74.0060], 5);
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+    var map = L.map('map').setView([40.7128, -74.0060], 5);
 
-        // ✅ Correct OpenStreetMap tile layer
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '&copy; OpenStreetMap contributors'
-        }).addTo(map);
+    // ✅ Add OpenStreetMap layer
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(map);
 
-        // ✅ Adding a test marker
-        L.marker([40.7128, -74.0060]).addTo(map)
-            .bindPopup("New York City")
-            .openPopup();
-    </script>
+    // ✅ Load external GeoJSON file
+    fetch('assets/CFG_map/points.geojson')
+        .then(response => response.json())
+        .then(data => {
+            L.geoJSON(data, {
+                onEachFeature: function (feature, layer) {
+                    if (feature.properties) {
+                        layer.bindPopup("<b>" + feature.properties.name + "</b><br>" + feature.properties.description);
+                    }
+                }
+            }).addTo(map);
+        })
+        .catch(error => console.log("Error loading GeoJSON: ", error));
+</script>
 
 </body>
 </html>
