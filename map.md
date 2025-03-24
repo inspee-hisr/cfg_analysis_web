@@ -25,7 +25,7 @@ layout: page
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
-    var map = L.map('map').setView([40.7128, -74.0060], 5);
+    var map = L.map('map').setView([40.7128, 34.0060], 5);
 
     // ✅ Add OpenStreetMap layer
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
