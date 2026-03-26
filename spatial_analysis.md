@@ -17,7 +17,7 @@ We used these packages for the analysis in R:
 
 ## Administrative data of Greece
 
-![Caves and species abudance in each administravive region of Greece](/assets/Website_plots/caves_species_region.png)
+![Caves and species abudance in each administravive region of Greece](/assets/Website_plots/1_caves_species_region.png)
 
 ![Regions with caves coordinates in Greece.](/assets/Plots/caves_in_region_no_text_color.png)
 
@@ -37,7 +37,7 @@ We used these packages for the analysis in R:
 
 ### Conservation
 
-![Summary of cave protections in Greece](/assets/Website_plots/caves_protection_data_type.png)
+![Summary of cave protections in Greece](/assets/Website_plots/7_caves_protection_data_type.png)
 
 
 ![Caves and protected areas in Greece (only borders)](/assets/Plots/map_greece_plot_lines.png)
